@@ -66,7 +66,7 @@ export async function saveTutorApplication(
   const file = formData.get("credential") as File | null;
   const credentialType = String(formData.get("credentialType") ?? "other");
   if (file && file.size > 0) {
-    if (file.size > 10 * 1024 * 1024) return { error: "Credential files must be 10 MB or smaller." };
+    if (file.size > 20 * 1024 * 1024) return { error: "Credential files must be 20 MB or smaller." };
     const storagePath = `${profile.id}/${crypto.randomUUID()}-${file.name}`;
     const { error: uploadError } = await supabase.storage
       .from("tutor-credentials")
