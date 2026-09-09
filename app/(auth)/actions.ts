@@ -80,7 +80,7 @@ export async function signUp(_prevState: FormState, formData: FormData): Promise
 
   const { role, firstName, lastName, phone, email, password } = parsed.data;
   const supabase = await createClient();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
   const { data, error } = await supabase.auth.signUp({
     email,
