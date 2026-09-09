@@ -71,11 +71,13 @@ export default async function TutorDashboardPage() {
     .eq("profile_id", profile!.id)
     .single();
 
-  const { count: upcomingCount } = await supabase
+  const { data: appointments } = await supabase
     .from("appointments")
-    .select("id", { count: "exact", head: true })
+    .select("id, status, appointment_slots(slot_date, start_time, end_time), profiles(first_name, last_name), subjects(name)")
     .eq("tutor_profile_id", tutorProfile!.id)
-    .in("status", ["scheduled", "confirmed"]);
+    .in("status", ["scheduled", "confirmed"])
+    .order("created_at", { ascending: false })
+    .limit(8);
 
   const [{ data: subjects }, { data: availability }] = await Promise.all([
     supabase.from("subjects").select("id, name").eq("is_active", true).order("name"),
@@ -105,7 +107,8 @@ export default async function TutorDashboardPage() {
           <CardHeader>
             <CardTitle>Upcoming appointments</CardTitle>
           </CardHeader>
-          <p className="text-3xl font-bold text-foreground">{upcomingCount ?? 0}</p>
+            <p className="text-3xl font-bold text-foreground">{appointments?.length ?? 0}</p>
+            <ul className="mt-4 divide-y divide-border">{(appointments ?? []).map((appointment) => { const student = Array.isArray(appointment.profiles) ? appointment.profiles[0] : appointment.profiles; const slot = Array.isArray(appointment.appointment_slots) ? appointment.appointment_slots[0] : appointment.appointment_slots; return <li key={appointment.id} className="py-2 text-sm"><p className="font-medium text-foreground">{student?.first_name} {student?.last_name}</p><p className="text-muted">{slot?.slot_date} · {slot?.start_time?.slice(0, 5)}</p></li>; })}</ul>
         </Card>
         <Card>
           <CardHeader>
