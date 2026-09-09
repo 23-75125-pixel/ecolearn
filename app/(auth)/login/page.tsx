@@ -2,7 +2,7 @@
 
 import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { signIn, type FormState } from "../actions";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const initialState: FormState = null;
 function LoginForm() {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "";
 
@@ -53,7 +54,11 @@ function LoginForm() {
       <Button type="submit" className="w-full" isLoading={isPending}>
         Sign in
       </Button>
-      <ActionDialog error={state?.error} />
+        <ActionDialog
+          error={state?.error}
+          success={state?.success}
+          onClose={() => state?.redirectTo && router.push(state.redirectTo)}
+        />
     </form>
   );
 }
@@ -87,6 +92,6 @@ export default function LoginPage() {
 function LoginNotice() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
-  if (!error) return null;
-  return <p role="alert" className="mb-4 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>;
+  const success = searchParams.get("success");
+  return <ActionDialog error={error ?? undefined} success={success ?? undefined} />;
 }

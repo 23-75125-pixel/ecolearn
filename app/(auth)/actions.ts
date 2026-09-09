@@ -7,6 +7,8 @@ import type { AppRole } from "@/types/database.types";
 
 export type FormState = {
   error?: string;
+  success?: string;
+  redirectTo?: string;
   fieldErrors?: Record<string, string>;
   message?: string;
 } | null;
@@ -61,7 +63,7 @@ export async function signIn(_prevState: FormState, formData: FormData): Promise
       ? requestedNext
       : ROLE_HOME[role];
 
-  redirect(next);
+  return { success: "Login successful. Welcome back!", redirectTo: next };
 }
 
 export async function signUp(_prevState: FormState, formData: FormData): Promise<FormState> {
@@ -109,5 +111,5 @@ export async function signUp(_prevState: FormState, formData: FormData): Promise
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect("/login?success=You%20have%20been%20signed%20out%20successfully.");
 }

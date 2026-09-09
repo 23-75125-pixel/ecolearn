@@ -3,7 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { CheckCircle2, CircleAlert, X } from "lucide-react";
 
-export function ActionDialog({ error, success }: { error?: string; success?: string }) {
+export function ActionDialog({ error, success, onClose }: { error?: string; success?: string; onClose?: () => void }) {
   const message = error ?? success;
   const [dismissedMessage, setDismissedMessage] = useState<string | null>(null);
   const open = Boolean(message && message !== dismissedMessage);
@@ -16,9 +16,9 @@ export function ActionDialog({ error, success }: { error?: string; success?: str
         <div className="flex items-start gap-3">
           {isError ? <CircleAlert className="shrink-0 text-danger" size={24} /> : <CheckCircle2 className="shrink-0 text-accent-500" size={24} />}
           <div className="min-w-0 flex-1"><h2 id="action-dialog-title" className="font-semibold text-foreground">{isError ? "Something went wrong" : "Success"}</h2><p className="mt-2 text-sm leading-6 text-muted">{message}</p></div>
-          <button type="button" onClick={() => setDismissedMessage(message)} className="text-muted hover:text-foreground" aria-label="Close dialog" title="Close dialog"><X size={18} /></button>
+          <button type="button" onClick={() => { setDismissedMessage(message); onClose?.(); }} className="text-muted hover:text-foreground" aria-label="Close dialog" title="Close dialog"><X size={18} /></button>
         </div>
-        <button type="button" onClick={() => setDismissedMessage(message)} className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-sm font-semibold text-white hover:bg-primary-700">OK</button>
+        <button type="button" onClick={() => { setDismissedMessage(message); onClose?.(); }} className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-sm font-semibold text-white hover:bg-primary-700">OK</button>
       </div>
     </div>
   );
