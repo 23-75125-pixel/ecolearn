@@ -7,6 +7,9 @@ import {
   APPLICATION_STATUS_TONE,
   APPLICATION_STATUS_MESSAGE,
 } from "@/lib/constants/status";
+import { ApplicationForm } from "@/components/tutor/application-form";
+import { AvailabilityManager } from "@/components/tutor/availability-manager";
+import { NotificationList } from "@/components/student/notification-list";
 
 export default async function TutorDashboardPage() {
   const profile = await getCurrentProfile();
@@ -14,11 +17,12 @@ export default async function TutorDashboardPage() {
 
   const { data: application } = await supabase
     .from("tutor_applications")
-    .select("id, status, review_notes")
+    .select("id, status, review_notes, school_name, degree, major, graduation_year, academic_achievements, teaching_experience_summary, years_experience, teaching_approach, preferred_modes, tutor_application_subjects(subject_id)")
     .eq("tutor_id", profile!.id)
     .maybeSingle();
 
   if (!application) {
+    const { data: subjects } = await supabase.from("subjects").select("id, name").eq("is_active", true).order("name");
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <h1 className="text-2xl font-bold text-foreground">Welcome, {profile?.first_name}</h1>
@@ -29,9 +33,7 @@ export default async function TutorDashboardPage() {
               Approval is required before you can set availability or receive bookings.
             </CardDescription>
           </CardHeader>
-          <div className="rounded-md border border-dashed border-border p-6 text-sm text-muted">
-            The guided application form is arriving in the next development phase.
-          </div>
+          <ApplicationForm subjects={subjects ?? []} />
         </Card>
       </div>
     );
@@ -55,9 +57,9 @@ export default async function TutorDashboardPage() {
               <p className="mt-1 text-muted">{application.review_notes}</p>
             </div>
           )}
-          <div className="mt-6 rounded-md border border-dashed border-border p-4 text-sm text-muted">
-            Availability and appointments unlock once your application is approved.
-          </div>
+          {(application.status === "draft" || application.status === "needs_revision") && (
+            <ApplicationForm application={application} subjects={(await supabase.from("subjects").select("id, name").eq("is_active", true).order("name")).data ?? []} />
+          )}
         </Card>
       </div>
     );
@@ -74,6 +76,22 @@ export default async function TutorDashboardPage() {
     .select("id", { count: "exact", head: true })
     .eq("tutor_profile_id", tutorProfile!.id)
     .in("status", ["scheduled", "confirmed"]);
+
+  const [{ data: subjects }, { data: availability }] = await Promise.all([
+    supabase.from("subjects").select("id, name").eq("is_active", true).order("name"),
+    supabase
+      .from("availability")
+      .select("id, day_date, start_time, end_time, slot_duration_minutes, subject_id")
+      .eq("tutor_profile_id", tutorProfile!.id)
+      .order("day_date")
+      .order("start_time"),
+  ]);
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("id, title, body, is_read, created_at")
+    .eq("profile_id", profile!.id)
+    .order("created_at", { ascending: false })
+    .limit(8);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -94,11 +112,13 @@ export default async function TutorDashboardPage() {
             <CardTitle>Availability</CardTitle>
             <CardDescription>Manage your bookable schedule.</CardDescription>
           </CardHeader>
-          <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted">
-            Availability management is arriving in the next development phase.
-          </div>
+          <AvailabilityManager availability={availability ?? []} subjects={subjects ?? []} />
         </Card>
       </div>
+      <Card className="mt-6">
+        <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Updates about your application and sessions.</CardDescription></CardHeader>
+        <NotificationList notifications={notifications ?? []} />
+      </Card>
     </div>
   );
 }

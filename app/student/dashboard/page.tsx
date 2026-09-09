@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { APPOINTMENT_STATUS_LABEL, APPOINTMENT_STATUS_TONE } from "@/lib/constants/status";
+import { cancelAppointment } from "@/app/student/actions";
+import { NotificationList } from "@/components/student/notification-list";
 
 export default async function StudentDashboardPage() {
   const profile = await getCurrentProfile();
@@ -15,9 +17,15 @@ export default async function StudentDashboardPage() {
       "id, status, appointment_slots(slot_date, start_time), tutor_profiles(profiles(first_name, last_name)), subjects(name)",
     )
     .eq("student_id", profile!.id)
-    .in("status", ["scheduled", "confirmed"])
-    .order("slot_date", { foreignTable: "appointment_slots", ascending: true })
-    .limit(5);
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  const { data: notifications } = await supabase
+    .from("notifications")
+    .select("id, title, body, is_read, created_at")
+    .eq("profile_id", profile!.id)
+    .order("created_at", { ascending: false })
+    .limit(8);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -27,13 +35,13 @@ export default async function StudentDashboardPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Upcoming appointments</CardTitle>
-            <CardDescription>Your next scheduled sessions.</CardDescription>
+            <CardTitle>Appointments</CardTitle>
+            <CardDescription>Your scheduled sessions and appointment history.</CardDescription>
           </CardHeader>
 
           {!appointments || appointments.length === 0 ? (
             <div className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted">
-              No upcoming appointments yet.{" "}
+              No appointments yet.{" "}
               <Link href="/tutors" className="font-medium text-primary-600 hover:underline">
                 Find a tutor
               </Link>{" "}
@@ -54,7 +62,7 @@ export default async function StudentDashboardPage() {
                 const subject = Array.isArray(appt.subjects) ? appt.subjects[0] : appt.subjects;
 
                 return (
-                  <li key={appt.id} className="flex items-center justify-between py-3">
+                  <li key={appt.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                     <div>
                       <p className="font-medium text-foreground">
                         {tutor?.first_name} {tutor?.last_name}
@@ -66,9 +74,7 @@ export default async function StudentDashboardPage() {
                         </p>
                       )}
                     </div>
-                    <Badge tone={APPOINTMENT_STATUS_TONE[appt.status]}>
-                      {APPOINTMENT_STATUS_LABEL[appt.status]}
-                    </Badge>
+                    <div className="flex items-center gap-3"><Badge tone={APPOINTMENT_STATUS_TONE[appt.status]}>{APPOINTMENT_STATUS_LABEL[appt.status]}</Badge>{["scheduled", "confirmed"].includes(appt.status) && <form action={cancelAppointment}><input type="hidden" name="appointmentId" value={appt.id} /><button type="submit" className="text-xs font-medium text-danger hover:underline">Cancel</button></form>}</div>
                   </li>
                 );
               })}
@@ -86,11 +92,14 @@ export default async function StudentDashboardPage() {
           >
             Find a tutor
           </Link>
-          <p className="mt-3 text-xs text-muted">
-            Appointment history and profile management are coming in the next development phase.
-          </p>
+          <p className="mt-3 text-xs text-muted">Book sessions, review past appointments, and manage cancellations from this dashboard.</p>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Updates about applications and appointments.</CardDescription></CardHeader>
+        <NotificationList notifications={notifications ?? []} />
+      </Card>
     </div>
   );
 }
