@@ -1,0 +1,150 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import Link from "next/link";
+import { signUp, type FormState } from "../actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label, FieldError } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { cn } from "@/lib/utils/cn";
+
+const initialState: FormState = null;
+
+export default function RegisterPage() {
+  const [state, formAction, isPending] = useActionState(signUp, initialState);
+  const [role, setRole] = useState<"student" | "tutor">("student");
+
+  if (state?.message) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Almost there</CardTitle>
+        </CardHeader>
+        <p className="text-sm text-foreground">{state.message}</p>
+        <Link
+          href="/login"
+          className="mt-6 inline-block text-sm font-medium text-primary-600 hover:underline"
+        >
+          Back to sign in
+        </Link>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Create your account</CardTitle>
+        <CardDescription>Join ECoLearn as a student or a tutor.</CardDescription>
+      </CardHeader>
+
+      <form action={formAction} className="space-y-4" noValidate>
+        {state?.error && (
+          <p role="alert" className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+            {state.error}
+          </p>
+        )}
+
+        <fieldset>
+          <legend className="mb-1.5 block text-sm font-medium text-foreground">
+            I&apos;m joining as a...
+          </legend>
+          <div className="grid grid-cols-2 gap-2">
+            {(["student", "tutor"] as const).map((option) => (
+              <label
+                key={option}
+                className={cn(
+                  "flex cursor-pointer items-center justify-center rounded-md border px-3 py-2 text-sm font-medium capitalize",
+                  role === option
+                    ? "border-primary-600 bg-primary-50 text-primary-700"
+                    : "border-border text-foreground hover:bg-surface",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  value={option}
+                  checked={role === option}
+                  onChange={() => setRole(option)}
+                  className="sr-only"
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+          <FieldError>{state?.fieldErrors?.role}</FieldError>
+        </fieldset>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="firstName">First name</Label>
+            <Input id="firstName" name="firstName" required invalid={!!state?.fieldErrors?.firstName} />
+            <FieldError>{state?.fieldErrors?.firstName}</FieldError>
+          </div>
+          <div>
+            <Label htmlFor="lastName">Last name</Label>
+            <Input id="lastName" name="lastName" required invalid={!!state?.fieldErrors?.lastName} />
+            <FieldError>{state?.fieldErrors?.lastName}</FieldError>
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="phone">Phone number (optional)</Label>
+          <Input id="phone" name="phone" type="tel" autoComplete="tel" />
+        </div>
+
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            invalid={!!state?.fieldErrors?.email}
+          />
+          <FieldError>{state?.fieldErrors?.email}</FieldError>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              invalid={!!state?.fieldErrors?.password}
+            />
+            <FieldError>{state?.fieldErrors?.password}</FieldError>
+          </div>
+          <div>
+            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              invalid={!!state?.fieldErrors?.confirmPassword}
+            />
+            <FieldError>{state?.fieldErrors?.confirmPassword}</FieldError>
+          </div>
+        </div>
+
+        <Button type="submit" className="w-full" isLoading={isPending}>
+          Create account
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-muted">
+        Already have an account?{" "}
+        <Link href="/login" className="font-medium text-primary-600 hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </Card>
+  );
+}

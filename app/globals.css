@@ -2,7 +2,24 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #101828;
+
+  /* Primary - trust/education blue. Secondary/accent used sparingly, per
+     the "avoid excessive colors" guidance in the project brief. */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-500: #2563eb;
+  --primary-600: #1d4ed8;
+  --primary-700: #1e40af;
+
+  --accent-500: #0d9488; /* teal - used sparingly for success/approved states */
+
+  --muted: #64748b;
+  --border-color: #e2e8f0;
+  --surface: #f8fafc;
+
+  --danger: #dc2626;
+  --warning: #d97706;
 }
 
 @theme inline {
@@ -10,17 +27,40 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-accent-500: var(--accent-500);
+  --color-muted: var(--muted);
+  --color-border: var(--border-color);
+  --color-surface: var(--surface);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b1220;
+    --foreground: #e5e9f0;
+    --surface: #111827;
+    --border-color: #1f2937;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
