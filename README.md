@@ -69,6 +69,29 @@ you're extending this project. This README covers day-to-day setup.
 
    Visit http://localhost:3000.
 
+## Vercel deployment
+
+The local `.env` file is ignored by Git and is not uploaded to Vercel. Add
+these variables in Vercel Project Settings -> Environment Variables, with the
+Production environment selected:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+NEXT_PUBLIC_SITE_URL=https://YOUR_VERCEL_DOMAIN.vercel.app
+```
+
+Redeploy after saving the variables. The production build checks the two
+required Supabase variables and prints an actionable error if either is
+missing, instead of allowing a runtime Internal Server Error.
+
+In Supabase Dashboard -> Authentication -> URL Configuration, add the same
+`NEXT_PUBLIC_SITE_URL` value as the Site URL and add this redirect URL:
+
+```text
+https://YOUR_VERCEL_DOMAIN.vercel.app/**
+```
+
 ## Demo accounts (after running the seed script)
 
 All demo accounts share the password `Passw0rd!`.
