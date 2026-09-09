@@ -10,6 +10,7 @@ import {
 import { ApplicationForm } from "@/components/tutor/application-form";
 import { AvailabilityManager } from "@/components/tutor/availability-manager";
 import { NotificationList } from "@/components/student/notification-list";
+import { ProfileEditor } from "@/components/tutor/profile-editor";
 
 export default async function TutorDashboardPage() {
   const profile = await getCurrentProfile();
@@ -67,9 +68,13 @@ export default async function TutorDashboardPage() {
 
   const { data: tutorProfile } = await supabase
     .from("tutor_profiles")
-    .select("id")
+    .select("id, headline, bio")
     .eq("profile_id", profile!.id)
     .single();
+
+  if (!tutorProfile) {
+    return <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-danger">Your approved tutor profile is still being prepared. Please try again shortly.</div>;
+  }
 
   const { data: appointments } = await supabase
     .from("appointments")
@@ -118,6 +123,7 @@ export default async function TutorDashboardPage() {
           <AvailabilityManager availability={availability ?? []} subjects={subjects ?? []} />
         </Card>
       </div>
+      <Card className="mt-6"><CardHeader><CardTitle>Public profile</CardTitle><CardDescription>Keep the profile students see up to date.</CardDescription></CardHeader><ProfileEditor headline={tutorProfile.headline} bio={tutorProfile.bio} /></Card>
       <Card className="mt-6">
         <CardHeader><CardTitle>Notifications</CardTitle><CardDescription>Updates about your application and sessions.</CardDescription></CardHeader>
         <NotificationList notifications={notifications ?? []} />

@@ -3,6 +3,7 @@
 import { Suspense, useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { LockKeyhole, Mail } from "lucide-react";
 import { signIn, type FormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,27 +29,19 @@ function LoginForm() {
 
       <div>
         <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          invalid={!!state?.fieldErrors?.email}
-        />
+        <div className="relative">
+            <Mail aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" />
+            <Input id="email" name="email" type="email" autoComplete="email" required invalid={!!state?.fieldErrors?.email} className="pl-10" />
+          </div>
         <FieldError>{state?.fieldErrors?.email}</FieldError>
       </div>
 
       <div>
         <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          invalid={!!state?.fieldErrors?.password}
-        />
+        <div className="relative">
+            <LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" />
+            <Input id="password" name="password" type="password" autoComplete="current-password" required invalid={!!state?.fieldErrors?.password} className="pl-10" />
+          </div>
         <FieldError>{state?.fieldErrors?.password}</FieldError>
       </div>
 

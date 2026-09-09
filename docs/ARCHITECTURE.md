@@ -178,6 +178,8 @@ public-read, owner-write, same path scoping.
 - Student appointment history and cancellation through `cancel_appointment()`.
 - Student and tutor notification lists with read-state updates.
 - Tutor dashboard appointment details.
+- Automated Vitest regression tests for authentication validation, status
+  presentation, and shared class composition.
 
 **Remaining hardening work:**
 - Calendar-specific date navigation and richer slot filtering beyond the current
@@ -185,8 +187,8 @@ public-read, owner-write, same path scoping.
 - Tutor profile editing (headline, bio, and subject maintenance) from the tutor
   dashboard.
 - Admin-facing notification/audit-log views and richer appointment operations.
-- Full responsive/accessibility review, security/QA pass, and automated tests
-  (section 42).
+- Supabase-backed end-to-end tests using a seeded local or hosted project,
+  plus a final manual accessibility review across authenticated workflows.
 
 ## 7. Setup
 

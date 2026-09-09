@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import { BookOpenCheck, GraduationCap, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { signUp, type FormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ export default function RegisterPage() {
                   onChange={() => setRole(option)}
                   className="sr-only"
                 />
+                {option === "student" ? <BookOpenCheck aria-hidden="true" size={16} /> : <GraduationCap aria-hidden="true" size={16} />}
                 {option}
               </label>
             ))}
@@ -79,57 +81,36 @@ export default function RegisterPage() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="firstName">First name</Label>
-            <Input id="firstName" name="firstName" required invalid={!!state?.fieldErrors?.firstName} />
+            <div className="relative"><UserRound aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="firstName" name="firstName" required invalid={!!state?.fieldErrors?.firstName} className="pl-10" /></div>
             <FieldError>{state?.fieldErrors?.firstName}</FieldError>
           </div>
           <div>
             <Label htmlFor="lastName">Last name</Label>
-            <Input id="lastName" name="lastName" required invalid={!!state?.fieldErrors?.lastName} />
+            <div className="relative"><UserRound aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="lastName" name="lastName" required invalid={!!state?.fieldErrors?.lastName} className="pl-10" /></div>
             <FieldError>{state?.fieldErrors?.lastName}</FieldError>
           </div>
         </div>
 
         <div>
           <Label htmlFor="phone">Phone number (optional)</Label>
-          <Input id="phone" name="phone" type="tel" autoComplete="tel" />
+          <div className="relative"><Phone aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="phone" name="phone" type="tel" autoComplete="tel" className="pl-10" /></div>
         </div>
 
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            invalid={!!state?.fieldErrors?.email}
-          />
+          <div className="relative"><Mail aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="email" name="email" type="email" autoComplete="email" required invalid={!!state?.fieldErrors?.email} className="pl-10" /></div>
           <FieldError>{state?.fieldErrors?.email}</FieldError>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              invalid={!!state?.fieldErrors?.password}
-            />
+            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="password" name="password" type="password" autoComplete="new-password" required invalid={!!state?.fieldErrors?.password} className="pl-10" /></div>
             <FieldError>{state?.fieldErrors?.password}</FieldError>
           </div>
           <div>
             <Label htmlFor="confirmPassword">Confirm password</Label>
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              required
-              invalid={!!state?.fieldErrors?.confirmPassword}
-            />
+            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" required invalid={!!state?.fieldErrors?.confirmPassword} className="pl-10" /></div>
             <FieldError>{state?.fieldErrors?.confirmPassword}</FieldError>
           </div>
         </div>

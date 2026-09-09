@@ -41,7 +41,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const matchedRolePrefix = ROLE_PREFIXES.find(({ prefix }) =>
-    pathname.startsWith(prefix),
+    pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 
   if (matchedRolePrefix) {

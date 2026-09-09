@@ -129,3 +129,22 @@ export async function deleteAvailability(formData: FormData) {
   await supabase.from("availability").delete().eq("id", String(formData.get("availabilityId"))).eq("tutor_profile_id", tutorProfile.id);
   revalidatePath("/tutor/dashboard");
 }
+
+export async function updateTutorProfile(
+  _previous: TutorFormState,
+  formData: FormData,
+): Promise<TutorFormState> {
+  const profile = await requireRole("tutor");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tutor_profiles")
+    .update({
+      headline: String(formData.get("headline") ?? "").trim() || null,
+      bio: String(formData.get("bio") ?? "").trim() || null,
+    })
+    .eq("profile_id", profile.id);
+  if (error) return { error: "Unable to update your public profile." };
+  revalidatePath("/tutor/dashboard");
+  revalidatePath("/tutors");
+  return null;
+}
