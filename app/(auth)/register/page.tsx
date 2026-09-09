@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { BookOpenCheck, GraduationCap, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { BookOpenCheck, Eye, EyeOff, GraduationCap, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { signUp, type FormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ const initialState: FormState = null;
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(signUp, initialState);
   const [role, setRole] = useState<"student" | "tutor">("student");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   if (state?.message) {
     return (
@@ -105,12 +107,12 @@ export default function RegisterPage() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="password">Password</Label>
-            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="password" name="password" type="password" autoComplete="new-password" required invalid={!!state?.fieldErrors?.password} className="pl-10" /></div>
+            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="new-password" required invalid={!!state?.fieldErrors?.password} className="pl-10 pr-10" /><button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3 top-2.5 text-muted hover:text-foreground" aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
             <FieldError>{state?.fieldErrors?.password}</FieldError>
           </div>
           <div>
             <Label htmlFor="confirmPassword">Confirm password</Label>
-            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" required invalid={!!state?.fieldErrors?.confirmPassword} className="pl-10" /></div>
+            <div className="relative"><LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" /><Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} autoComplete="new-password" required invalid={!!state?.fieldErrors?.confirmPassword} className="pl-10 pr-10" /><button type="button" onClick={() => setShowConfirmPassword((visible) => !visible)} className="absolute right-3 top-2.5 text-muted hover:text-foreground" aria-label={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"} title={showConfirmPassword ? "Hide confirmation password" : "Show confirmation password"}>{showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>
             <FieldError>{state?.fieldErrors?.confirmPassword}</FieldError>
           </div>
         </div>

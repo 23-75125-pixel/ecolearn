@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useActionState } from "react";
+import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { LockKeyhole, Mail } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { signIn, type FormState } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ const initialState: FormState = null;
 
 function LoginForm() {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
+  const [showPassword, setShowPassword] = useState(false);
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "";
 
@@ -40,7 +41,10 @@ function LoginForm() {
         <Label htmlFor="password">Password</Label>
         <div className="relative">
             <LockKeyhole aria-hidden="true" size={17} className="pointer-events-none absolute left-3 top-3 text-muted" />
-            <Input id="password" name="password" type="password" autoComplete="current-password" required invalid={!!state?.fieldErrors?.password} className="pl-10" />
+            <Input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required invalid={!!state?.fieldErrors?.password} className="pl-10 pr-10" />
+            <button type="button" onClick={() => setShowPassword((visible) => !visible)} className="absolute right-3 top-2.5 text-muted hover:text-foreground" aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
           </div>
         <FieldError>{state?.fieldErrors?.password}</FieldError>
       </div>
