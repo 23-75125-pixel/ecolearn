@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
+import { ActionDialog } from "@/components/ui/action-dialog";
 
 const initialState: FormState = null;
 
@@ -120,6 +121,7 @@ export default function RegisterPage() {
         <Button type="submit" className="w-full" isLoading={isPending}>
           Create account
         </Button>
+        <ActionDialog error={state?.error} />
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">

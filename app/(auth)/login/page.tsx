@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ActionDialog } from "@/components/ui/action-dialog";
 
 const initialState: FormState = null;
 
@@ -52,6 +53,7 @@ function LoginForm() {
       <Button type="submit" className="w-full" isLoading={isPending}>
         Sign in
       </Button>
+      <ActionDialog error={state?.error} />
     </form>
   );
 }

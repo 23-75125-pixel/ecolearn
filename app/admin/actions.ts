@@ -17,8 +17,9 @@ export type ReviewFormState = { error?: string } | null;
  * would reject the update regardless of what this function does.
  */
 
-export async function approveApplication(applicationId: string) {
+export async function approveApplication(formData: FormData) {
   await requireRole("admin");
+  const applicationId = String(formData.get("applicationId") ?? "");
   const supabase = await createClient();
   const { error } = await supabase
     .from("tutor_applications")
@@ -26,7 +27,7 @@ export async function approveApplication(applicationId: string) {
     .eq("id", applicationId);
 
   if (error) {
-    return { error: "Unable to approve this application. Please try again." };
+    return;
   }
   revalidatePath("/admin/dashboard");
   redirect("/admin/dashboard");

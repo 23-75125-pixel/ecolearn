@@ -9,12 +9,13 @@ import {
 } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { Label, FieldError } from "@/components/ui/label";
+import { ConfirmSubmit } from "@/components/ui/action-dialog";
 
 const initialState: ReviewFormState = null;
 
 export function ReviewActions({ applicationId }: { applicationId: string }) {
   const [mode, setMode] = useState<"idle" | "reject" | "revision">("idle");
-  const [rejectState, rejectAction, rejectPending] = useActionState(
+  const [rejectState, rejectAction] = useActionState(
     rejectApplication,
     initialState,
   );
@@ -39,9 +40,7 @@ export function ReviewActions({ applicationId }: { applicationId: string }) {
           <FieldError>{rejectState?.error}</FieldError>
         </div>
         <div className="flex gap-2">
-          <Button type="submit" variant="danger" isLoading={rejectPending}>
-            Confirm rejection
-          </Button>
+          <ConfirmSubmit message="Reject this tutor application? This decision will be sent to the tutor." className="inline-flex h-10 items-center justify-center rounded-md bg-danger px-4 text-sm font-medium text-white hover:opacity-90">Confirm rejection</ConfirmSubmit>
           <Button type="button" variant="ghost" onClick={() => setMode("idle")}>
             Cancel
           </Button>
@@ -79,7 +78,7 @@ export function ReviewActions({ applicationId }: { applicationId: string }) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      <Button onClick={() => approveApplication(applicationId)}>Approve</Button>
+      <form action={approveApplication}><input type="hidden" name="applicationId" value={applicationId} /><ConfirmSubmit message="Approve this tutor application? The tutor will become visible in the directory."><span className="inline-flex h-10 items-center justify-center rounded-md bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700">Approve</span></ConfirmSubmit></form>
       <Button variant="outline" onClick={() => setMode("revision")}>
         Request revision
       </Button>
