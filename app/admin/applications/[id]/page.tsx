@@ -13,22 +13,28 @@ export default async function AdminApplicationDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: application } = await supabase
+  const { data: application, error: applicationError } = await supabase
     .from("tutor_applications")
     .select(
-      "id, status, school_name, degree, major, graduation_year, teaching_experience_summary, years_experience, teaching_approach, preferred_modes, submitted_at, review_notes, profiles(first_name, last_name, email, phone), tutor_application_subjects(subjects(name))",
+      "id, tutor_id, status, school_name, degree, major, graduation_year, teaching_experience_summary, years_experience, teaching_approach, preferred_modes, submitted_at, review_notes",
     )
     .eq("id", id)
     .maybeSingle();
 
+  if (applicationError) {
+    return <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-danger">Unable to load this application for review. Please check the Supabase policies and try again.</div>;
+  }
   if (!application) notFound();
 
-  const applicant = Array.isArray(application.profiles)
-    ? application.profiles[0]
-    : application.profiles;
-  const subjects = (application.tutor_application_subjects ?? [])
-    .map((s) => (Array.isArray(s.subjects) ? s.subjects[0]?.name : s.subjects?.name))
-    .filter(Boolean);
+  const [{ data: applicant }, { data: applicationSubjects }] = await Promise.all([
+    supabase.from("profiles").select("first_name, last_name, email, phone").eq("id", application.tutor_id).maybeSingle(),
+    supabase.from("tutor_application_subjects").select("subject_id").eq("application_id", id),
+  ]);
+  const subjectIds = (applicationSubjects ?? []).map((subject) => subject.subject_id);
+  const { data: subjectsData } = subjectIds.length > 0
+    ? await supabase.from("subjects").select("name").in("id", subjectIds)
+    : { data: [] };
+  const subjects = (subjectsData ?? []).map((subject) => subject.name);
 
   const { data: credentials } = await supabase
     .from("tutor_credentials")
