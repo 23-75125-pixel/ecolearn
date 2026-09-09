@@ -38,6 +38,9 @@ export async function signIn(_prevState: FormState, formData: FormData): Promise
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
+    if (error.code === "email_not_confirmed" || error.message.toLowerCase().includes("email not confirmed")) {
+      return { error: "Please verify your email address first, then sign in again." };
+    }
     // Deliberately generic — never confirm whether the email is registered.
     return { error: "Invalid email or password." };
   }
@@ -84,7 +87,7 @@ export async function signUp(_prevState: FormState, formData: FormData): Promise
     password,
     options: {
       data: { role, first_name: firstName, last_name: lastName, phone: phone || null },
-      emailRedirectTo: `${siteUrl}/login`,
+      emailRedirectTo: `${siteUrl}/callback?next=${encodeURIComponent(ROLE_HOME[role])}`,
     },
   });
 

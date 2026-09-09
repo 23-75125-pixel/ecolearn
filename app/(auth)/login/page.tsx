@@ -60,6 +60,10 @@ export default function LoginPage() {
         <CardDescription>Welcome back to ECoLearn.</CardDescription>
       </CardHeader>
 
+      <Suspense fallback={null}>
+        <LoginNotice />
+      </Suspense>
+
       <Suspense fallback={<div className="h-64" />}>
         <LoginForm />
       </Suspense>
@@ -72,4 +76,11 @@ export default function LoginPage() {
       </p>
     </Card>
   );
+}
+
+function LoginNotice() {
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  if (!error) return null;
+  return <p role="alert" className="mb-4 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">{error}</p>;
 }
