@@ -29,8 +29,16 @@ export async function saveTutorApplication(
     preferred_modes: modes as ("online" | "in_person" | "hybrid")[],
   };
 
-  if (!payload.school_name || !payload.degree || !payload.major || selectedSubjects.length === 0) {
-    return { error: "Add your academic details and choose at least one subject." };
+  const missingAcademicFields = [
+    !payload.school_name && "school",
+    !payload.degree && "degree",
+    !payload.major && "major",
+  ].filter(Boolean);
+  if (missingAcademicFields.length > 0) {
+    return { error: `Please complete: ${missingAcademicFields.join(", ")}.` };
+  }
+  if (selectedSubjects.length === 0) {
+    return { error: "Choose at least one subject you want to teach." };
   }
   if (!payload.teaching_experience_summary || !payload.teaching_approach) {
     return { error: "Add your teaching experience and approach." };
