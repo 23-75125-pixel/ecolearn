@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { bookSlot, type BookingState } from "@/app/student/actions";
 import { Button } from "@/components/ui/button";
+import { ActionDialog } from "@/components/ui/action-dialog";
 
 export function BookingForm({ slotId, label }: { slotId: string; label: string }) {
   const [state, action, pending] = useActionState(bookSlot, null as BookingState);
@@ -12,6 +13,7 @@ export function BookingForm({ slotId, label }: { slotId: string; label: string }
       <Button type="submit" size="sm" isLoading={pending}>Book {label}</Button>
       {state?.error && <span role="alert" className="text-xs text-danger">{state.error}</span>}
       {state?.success && <span role="status" className="text-xs text-accent-500">{state.success}</span>}
+      <ActionDialog error={state?.error} success={state?.success} />
     </form>
   );
 }

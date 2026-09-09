@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/session";
 
-export type TutorFormState = { error?: string } | null;
+export type TutorFormState = { error?: string; success?: string } | null;
 
 export async function saveTutorApplication(
   _previous: TutorFormState,
@@ -99,7 +99,7 @@ export async function saveTutorApplication(
   if (submitError) return { error: "Your application was saved, but could not be submitted for review." };
 
   revalidatePath("/tutor/dashboard");
-  return null;
+  return { success: "Your application was submitted for admin review." };
 }
 
 export async function createAvailability(
@@ -133,7 +133,7 @@ export async function createAvailability(
   });
   if (error) return { error: "Unable to create availability. Check that the time window does not overlap another one." };
   revalidatePath("/tutor/dashboard");
-  return null;
+  return { success: "Availability added and appointment slots generated." };
 }
 
 export async function deleteAvailability(formData: FormData) {
@@ -161,5 +161,5 @@ export async function updateTutorProfile(
   if (error) return { error: "Unable to update your public profile." };
   revalidatePath("/tutor/dashboard");
   revalidatePath("/tutors");
-  return null;
+  return { success: "Your public profile was updated." };
 }

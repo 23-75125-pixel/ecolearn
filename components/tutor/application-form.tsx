@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label, FieldError } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ActionDialog } from "@/components/ui/action-dialog";
 
 type Subject = { id: string; name: string };
 type Application = {
@@ -53,6 +54,7 @@ export function ApplicationForm({ application, subjects }: { application?: Appli
         </fieldset>
         <fieldset className="space-y-3"><legend className="text-base font-semibold text-foreground">Credential</legend><div className="grid gap-4 sm:grid-cols-2"><div><Label htmlFor="credentialType">Document type</Label><select id="credentialType" name="credentialType" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"><option value="valid_id">Valid ID</option><option value="diploma">Diploma</option><option value="certificate">Certificate</option><option value="teaching_credential">Teaching credential</option><option value="other">Other</option></select></div><div><Label htmlFor="credential">Upload document</Label><Input id="credential" name="credential" type="file" accept=".pdf,.jpg,.jpeg,.png" /></div></div><p className="text-xs text-muted">PDF, JPG, or PNG up to 20 MB.</p></fieldset>
         <FieldError>{state?.error}</FieldError><Button type="submit" isLoading={pending}>{application ? "Submit updated application" : "Submit application"}</Button>
+        <ActionDialog error={state?.error} success={state?.success} />
       </form>
     </Card>
   );

@@ -5,6 +5,7 @@ import { createAvailability, deleteAvailability, type TutorFormState } from "@/a
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ActionDialog, ConfirmSubmit } from "@/components/ui/action-dialog";
 
 type Subject = { id: string; name: string };
 type Availability = { id: string; day_date: string; start_time: string; end_time: string; slot_duration_minutes: number; subject_id: string | null };
@@ -21,7 +22,8 @@ export function AvailabilityManager({ availability, subjects }: { availability: 
         <div><Label htmlFor="subjectId">Subject</Label><select id="subjectId" name="subjectId" className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm"><option value="">Any subject</option>{subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}</select></div>
         <div className="sm:col-span-2 lg:col-span-5"><Button type="submit" isLoading={pending}>Add availability</Button>{state?.error && <p role="alert" className="mt-2 text-sm text-danger">{state.error}</p>}</div>
       </form>
-      {availability.length === 0 ? <p className="rounded-md border border-dashed border-border p-6 text-sm text-muted">No availability windows yet.</p> : <ul className="divide-y divide-border rounded-md border border-border">{availability.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium text-foreground">{item.day_date}</p><p className="text-sm text-muted">{item.start_time.slice(0, 5)} to {item.end_time.slice(0, 5)} · {item.slot_duration_minutes}-minute slots</p></div><form action={deleteAvailability}><input type="hidden" name="availabilityId" value={item.id} /><Button type="submit" variant="danger" size="sm">Remove</Button></form></li>)}</ul>}
+      {availability.length === 0 ? <p className="rounded-md border border-dashed border-border p-6 text-sm text-muted">No availability windows yet.</p> : <ul className="divide-y divide-border rounded-md border border-border">{availability.map((item) => <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium text-foreground">{item.day_date}</p><p className="text-sm text-muted">{item.start_time.slice(0, 5)} to {item.end_time.slice(0, 5)} · {item.slot_duration_minutes}-minute slots</p></div><form action={deleteAvailability}><input type="hidden" name="availabilityId" value={item.id} /><ConfirmSubmit message="Remove this availability window? Any open slots will be removed."><span className="inline-flex h-8 items-center justify-center rounded-md bg-danger px-3 text-sm font-medium text-white hover:opacity-90">Remove</span></ConfirmSubmit></form></li>)}</ul>}
+      <ActionDialog error={state?.error} success={state?.success} />
     </div>
   );
 }
