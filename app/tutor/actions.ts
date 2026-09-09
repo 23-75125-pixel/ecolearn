@@ -43,14 +43,14 @@ export async function saveTutorApplication(
   if (currentId) {
     const { error } = await supabase
       .from("tutor_applications")
-      .update({ ...payload, status: "pending" })
+      .update(payload)
       .eq("id", currentId)
       .eq("tutor_id", profile.id);
     if (error) return { error: "Unable to save your application. Please check the details and try again." };
   } else {
     const { data, error } = await supabase
       .from("tutor_applications")
-      .insert({ ...payload, tutor_id: profile.id, status: "pending" })
+      .insert({ ...payload, tutor_id: profile.id, status: "draft" })
       .select("id")
       .single();
     if (error || !data) return { error: "Unable to submit your application. Please try again." };
@@ -82,6 +82,13 @@ export async function saveTutorApplication(
     });
     if (credentialError) return { error: "Application saved, but the credential record failed." };
   }
+
+  const { error: submitError } = await supabase
+    .from("tutor_applications")
+    .update({ status: "pending" })
+    .eq("id", currentId)
+    .eq("tutor_id", profile.id);
+  if (submitError) return { error: "Your application was saved, but could not be submitted for review." };
 
   revalidatePath("/tutor/dashboard");
   return null;
