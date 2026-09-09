@@ -29,11 +29,21 @@ export default async function AdminDashboardPage() {
       .in("status", ["scheduled", "confirmed"]),
   ]);
 
-  const { data: queue } = await supabase
+  const { data: applications, error: queueError } = await supabase
     .from("tutor_applications")
-    .select("id, status, submitted_at, profiles(first_name, last_name)")
+    .select("id, tutor_id, status, submitted_at")
     .in("status", ["pending", "under_review", "needs_revision"])
     .order("submitted_at", { ascending: true });
+
+  const tutorIds = (applications ?? []).map((application) => application.tutor_id);
+  const { data: applicants } = tutorIds.length > 0
+    ? await supabase.from("profiles").select("id, first_name, last_name").in("id", tutorIds)
+    : { data: [] };
+  const applicantById = new Map((applicants ?? []).map((applicant) => [applicant.id, applicant]));
+  const queue = (applications ?? []).map((application) => ({
+    ...application,
+    profiles: applicantById.get(application.tutor_id) ?? null,
+  }));
 
   const stats = [
     { label: "Students", value: totalStudents },
@@ -62,7 +72,11 @@ export default async function AdminDashboardPage() {
           <CardTitle>Applications awaiting review</CardTitle>
         </CardHeader>
 
-        {!queue || queue.length === 0 ? (
+        {queueError ? (
+          <div className="rounded-md border border-danger/30 bg-danger/10 p-8 text-center text-sm text-danger">
+            Unable to load applications for review. Please refresh or check the Supabase migration and RLS policies.
+          </div>
+        ) : queue.length === 0 ? (
           <div className="rounded-md border border-dashed border-border p-8 text-center text-sm text-muted">
             Nothing needs your attention right now.
           </div>
