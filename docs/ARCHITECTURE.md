@@ -171,22 +171,22 @@ public-read, owner-write, same path scoping.
 - A first cut of admin tutor-application review (approve / reject with
   reason / request revision with reason) — enough to exercise the full
   onboarding state machine end-to-end via the seed data.
+- Tutor application form with subject selection and private credential upload.
+- Tutor availability management with database-generated appointment slots.
+- Tutor directory search and subject filtering.
+- Student booking from tutor profiles through `book_appointment_slot()`.
+- Student appointment history and cancellation through `cancel_appointment()`.
+- Student and tutor notification lists with read-state updates.
+- Tutor dashboard appointment details.
 
-**Not yet built (later phases, per the master prompt's own phase list):**
-- Phase 4: the tutor's own multi-step application form + credential
-  upload UI (the schema, storage bucket, and RLS for this already exist;
-  only the wizard UI is missing).
-- Phase 5: tutor-facing availability management UI (create/edit/delete
-  windows) — the schema, slot generation, and RLS already exist.
-- Phase 6: student-facing search/filter, calendar picker, and the booking
-  UI itself (the `book_appointment_slot()` RPC already exists and is
-  ready to call).
-- Phase 7: fuller dashboards (appointment history, cancellation UI calling
-  `cancel_appointment()`).
-- Phase 8: notification center UI (rows are already being written by the
-  triggers/functions above; nothing renders them yet).
-- Phases 9–10: responsive/accessibility polish pass, full security/QA
-  pass, and automated tests (section 42).
+**Remaining hardening work:**
+- Calendar-specific date navigation and richer slot filtering beyond the current
+  date-ordered availability list.
+- Tutor profile editing (headline, bio, and subject maintenance) from the tutor
+  dashboard.
+- Admin-facing notification/audit-log views and richer appointment operations.
+- Full responsive/accessibility review, security/QA pass, and automated tests
+  (section 42).
 
 ## 7. Setup
 
