@@ -1,31 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #101828;
+  --background: #fbfdfb;
+  --foreground: #12334a;
 
-  /* Primary - trust/education blue. Secondary/accent used sparingly, per
-     the "avoid excessive colors" guidance in the project brief. */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-500: #2563eb;
-  --primary-600: #1d4ed8;
-  --primary-700: #1e40af;
+  /* Eco Learn palette: deep teal for action, leaf green for progress, navy for trust. */
+  --primary-50: #edf8f5;
+  --primary-100: #d7eee8;
+  --primary-500: #178477;
+  --primary-600: #146d63;
+  --primary-700: #10584f;
 
-  --accent-500: #0d9488; /* teal - used sparingly for success/approved states */
+  --accent-500: #5b9f5b;
 
-  --muted: #64748b;
-  --border-color: #e2e8f0;
-  --surface: #f8fafc;
+  --muted: #58717a;
+  --border-color: #d8e7e1;
+  --surface: #f2f8f5;
 
-  --danger: #dc2626;
-  --warning: #d97706;
+  --danger: #b54747;
+  --warning: #b77932;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-geist-mono);
 
   --color-primary-50: var(--primary-50);
@@ -43,17 +42,23 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b1220;
-    --foreground: #e5e9f0;
-    --surface: #111827;
-    --border-color: #1f2937;
+    --background: #0e211f;
+    --foreground: #e7f3ee;
+    --surface: #14302c;
+    --border-color: #285047;
+    --muted: #a4c2b7;
   }
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(180deg, var(--background) 0%, var(--surface) 100%);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--primary-100);
+  color: var(--primary-700);
 }
 
 @media (prefers-reduced-motion: reduce) {

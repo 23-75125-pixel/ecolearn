@@ -51,7 +51,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       />
       <main className="flex-1">{children}</main>
       <footer className="border-t border-border py-8 text-center text-sm text-muted">
-        © {new Date().getFullYear()} ECoLearn. All rights reserved.
+        © {new Date().getFullYear()} Eco Learn. All rights reserved.
       </footer>
     </div>
   );

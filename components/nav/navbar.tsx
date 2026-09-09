@@ -3,7 +3,9 @@
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { BrandLogo } from "@/components/brand/brand-logo";
 
 export interface NavLinkItem {
   href: string;
@@ -25,15 +27,7 @@ export function Navbar({
   return (
     <header className="border-b border-border bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href={brandHref} className="flex items-center gap-2 font-semibold text-primary-700">
-          <span
-            aria-hidden="true"
-            className="flex h-8 w-8 items-center justify-center rounded-md bg-primary-600 text-sm font-bold text-white"
-          >
-            E
-          </span>
-          ECoLearn
-        </Link>
+        <BrandLogo href={brandHref} />
 
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
           {links.map((link) => (
@@ -61,9 +55,7 @@ export function Navbar({
           aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((v) => !v)}
         >
-          <span aria-hidden="true" className="text-xl leading-none">
-            {open ? "\u2715" : "\u2630"}
-          </span>
+          {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
