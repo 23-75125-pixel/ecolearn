@@ -56,6 +56,111 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Melius-style showcase marquee (paused on hover; global reduced-motion
+   rule in this file already collapses the durations when it applies). */
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-x-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee-x var(--marquee-duration, 44s) linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-x-reverse var(--marquee-duration, 44s) linear infinite;
+}
+
+.marquee:hover .animate-marquee,
+.marquee:hover .animate-marquee-reverse {
+  animation-play-state: paused;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s ease-out both;
+}
+
+/* Hero word-by-word reveal (staggered via --word-delay). */
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-word-in {
+  animation: word-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--word-delay, 0ms);
+}
+
+/* Gentle bob for floating hero cards. */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float-y 5s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-y 6s ease-in-out 1.2s infinite;
+}
+
+/* Slow breathing motion for decorative background blobs. */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -7%, 0) scale(1.08);
+  }
+}
+
+.animate-drift {
+  animation: drift 14s ease-in-out infinite;
+}
+
+.animate-drift-reverse {
+  animation: drift 18s ease-in-out -6s infinite reverse;
+}
+
 ::selection {
   background: var(--primary-100);
   color: var(--primary-700);

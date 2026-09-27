@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { requireRole } from "@/lib/auth/session";
+import { requireRoleClient } from "@/lib/auth/session";
 
 export type ReviewFormState = { error?: string } | null;
 
@@ -17,66 +16,70 @@ export type ReviewFormState = { error?: string } | null;
  * would reject the update regardless of what this function does.
  */
 
-export async function approveApplication(formData: FormData) {
-  await requireRole("admin");
+type ApplicationReview = {
+  status: "approved" | "rejected" | "needs_revision";
+  /** Shown when a required reason is missing. */
+  requiredReasonMessage: string;
+  /** Shown when the database update fails. */
+  failureMessage: string;
+};
+
+async function reviewApplication(
+  formData: FormData,
+  review: ApplicationReview,
+): Promise<ReviewFormState> {
+  const { supabase } = await requireRoleClient("admin");
+
   const applicationId = String(formData.get("applicationId") ?? "");
-  const supabase = await createClient();
+  const reason = String(formData.get("reason") ?? "").trim();
+
+  if (review.status !== "approved" && !reason) {
+    return { error: review.requiredReasonMessage };
+  }
+
   const { error } = await supabase
     .from("tutor_applications")
-    .update({ status: "approved" })
+    .update({
+      status: review.status,
+      ...(review.status !== "approved" && { review_notes: reason }),
+    })
     .eq("id", applicationId);
 
   if (error) {
-    return;
+    return { error: review.failureMessage };
   }
+
   revalidatePath("/admin/dashboard");
   redirect("/admin/dashboard");
+}
+
+export async function approveApplication(formData: FormData) {
+  await reviewApplication(formData, {
+    status: "approved",
+    requiredReasonMessage: "",
+    failureMessage: "",
+  });
 }
 
 export async function rejectApplication(
   _prevState: ReviewFormState,
   formData: FormData,
 ): Promise<ReviewFormState> {
-  await requireRole("admin");
-  const applicationId = String(formData.get("applicationId"));
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!reason) {
-    return { error: "A reason is required when rejecting an application." };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("tutor_applications")
-    .update({ status: "rejected", review_notes: reason })
-    .eq("id", applicationId);
-
-  if (error) {
-    return { error: "Unable to reject this application. Please try again." };
-  }
-  revalidatePath("/admin/dashboard");
-  redirect("/admin/dashboard");
+  return reviewApplication(formData, {
+    status: "rejected",
+    requiredReasonMessage: "A reason is required when rejecting an application.",
+    failureMessage: "Unable to reject this application. Please try again.",
+  });
 }
 
 export async function requestRevision(
   _prevState: ReviewFormState,
   formData: FormData,
 ): Promise<ReviewFormState> {
-  await requireRole("admin");
-  const applicationId = String(formData.get("applicationId"));
-  const reason = String(formData.get("reason") ?? "").trim();
-  if (!reason) {
-    return { error: "Explain what needs to be corrected before requesting revision." };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("tutor_applications")
-    .update({ status: "needs_revision", review_notes: reason })
-    .eq("id", applicationId);
-
-  if (error) {
-    return { error: "Unable to update this application. Please try again." };
-  }
-  revalidatePath("/admin/dashboard");
-  redirect("/admin/dashboard");
+  return reviewApplication(formData, {
+    status: "needs_revision",
+    requiredReasonMessage: "Explain what needs to be corrected before requesting revision.",
+    failureMessage: "Unable to update this application. Please try again.",
+  });
 }
+

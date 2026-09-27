@@ -3,7 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReviewActions } from "@/components/admin/review-actions";
-import { APPLICATION_STATUS_LABEL, APPLICATION_STATUS_TONE } from "@/lib/constants/status";
+import {
+  APPLICATION_STATUS_LABEL,
+  APPLICATION_STATUS_TONE,
+  REVIEWABLE_APPLICATION_STATUSES,
+} from "@/lib/constants/status";
+
+const CREDENTIAL_LINK_EXPIRY_SECONDS = 60 * 10;
 
 export default async function AdminApplicationDetailPage({
   params,
@@ -45,7 +51,7 @@ export default async function AdminApplicationDetailPage({
     (credentials ?? []).map(async (c) => {
       const { data: signed } = await supabase.storage
         .from("tutor-credentials")
-        .createSignedUrl(c.storage_path, 60 * 10);
+        .createSignedUrl(c.storage_path, CREDENTIAL_LINK_EXPIRY_SECONDS);
       return { ...c, url: signed?.signedUrl ?? null };
     }),
   );
@@ -147,7 +153,7 @@ export default async function AdminApplicationDetailPage({
         )}
       </Card>
 
-      {["pending", "under_review", "needs_revision"].includes(application.status) && (
+      {REVIEWABLE_APPLICATION_STATUSES.includes(application.status) && (
         <div className="mt-6">
           <ReviewActions applicationId={application.id} />
         </div>

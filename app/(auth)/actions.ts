@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, registerSchema } from "@/lib/validations/auth";
+import { ROLE_HOME } from "@/lib/constants/roles";
 import type { AppRole } from "@/types/database.types";
 
 export type FormState = {
@@ -12,12 +13,6 @@ export type FormState = {
   fieldErrors?: Record<string, string>;
   message?: string;
 } | null;
-
-const ROLE_HOME: Record<AppRole, string> = {
-  student: "/student/dashboard",
-  tutor: "/tutor/dashboard",
-  admin: "/admin/dashboard",
-};
 
 function fieldErrorsFrom(issues: { path: PropertyKey[]; message: string }[]) {
   const errors: Record<string, string> = {};

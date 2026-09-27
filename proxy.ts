@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { AUTH_PATHS, ROLE_HOME, ROLE_PREFIXES } from "@/lib/constants/roles";
 import type { AppRole } from "@/types/database.types";
 
 /**
@@ -12,19 +13,6 @@ import type { AppRole } from "@/types/database.types";
  * RLS, and every Server Action re-checks the caller's role server-side.
  * Hiding a link or bouncing a request here never substitutes for that.
  */
-const ROLE_HOME: Record<AppRole, string> = {
-  student: "/student/dashboard",
-  tutor: "/tutor/dashboard",
-  admin: "/admin/dashboard",
-};
-
-const ROLE_PREFIXES: { prefix: string; role: AppRole }[] = [
-  { prefix: "/student", role: "student" },
-  { prefix: "/tutor", role: "tutor" },
-  { prefix: "/admin", role: "admin" },
-];
-
-const AUTH_PATHS = ["/login", "/register"];
 
 export async function proxy(request: NextRequest) {
   const { response, supabase, user } = await updateSession(request);

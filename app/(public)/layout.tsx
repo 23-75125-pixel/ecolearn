@@ -1,19 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Navbar } from "@/components/nav/navbar";
+import { SiteFooter } from "@/components/landing/site-footer";
 import { getCurrentProfile } from "@/lib/auth/session";
+import { ROLE_HOME } from "@/lib/constants/roles";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
   { href: "/tutors", label: "Find Tutors" },
   { href: "/about", label: "About" },
 ];
-
-const ROLE_HOME: Record<string, string> = {
-  student: "/student/dashboard",
-  tutor: "/tutor/dashboard",
-  admin: "/admin/dashboard",
-};
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
   const profile = await getCurrentProfile();
@@ -50,9 +46,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         }
       />
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border py-8 text-center text-sm text-muted">
-        © {new Date().getFullYear()} Eco Learn. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

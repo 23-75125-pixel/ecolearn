@@ -49,3 +49,23 @@ export const APPOINTMENT_STATUS_TONE: Record<
   cancelled: "danger",
   no_show: "warning",
 };
+
+/** Appointments that are still upcoming and cancellable. */
+export const ACTIVE_APPOINTMENT_STATUSES: AppointmentStatus[] = [
+  "scheduled",
+  "confirmed",
+];
+
+/** Application statuses that still need (or can receive) an admin decision. */
+export const REVIEWABLE_APPLICATION_STATUSES: ApplicationStatus[] = [
+  "pending",
+  "under_review",
+  "needs_revision",
+];
+
+/** Application statuses a tutor may still edit and resubmit. */
+export const EDITABLE_APPLICATION_STATUSES: ApplicationStatus[] = [
+  "draft",
+  "needs_revision",
+];
+

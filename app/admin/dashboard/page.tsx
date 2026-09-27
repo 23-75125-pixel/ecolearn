@@ -2,57 +2,20 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { APPLICATION_STATUS_TONE, APPLICATION_STATUS_LABEL } from "@/lib/constants/status";
+import {
+  APPLICATION_STATUS_LABEL,
+  APPLICATION_STATUS_TONE,
+  REVIEWABLE_APPLICATION_STATUSES,
+} from "@/lib/constants/status";
+import { unwrapRelation } from "@/lib/utils/relations";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
-  const [
-    { count: totalStudents },
-    { count: totalTutorAccounts },
-    { count: pendingApplications },
-    { count: approvedTutors },
-    { count: rejectedApplications },
-    { count: upcomingAppointments },
-  ] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student"),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "tutor"),
-    supabase
-      .from("tutor_applications")
-      .select("id", { count: "exact", head: true })
-      .in("status", ["pending", "under_review"]),
-    supabase.from("tutor_profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("tutor_applications").select("id", { count: "exact", head: true }).eq("status", "rejected"),
-    supabase
-      .from("appointments")
-      .select("id", { count: "exact", head: true })
-      .in("status", ["scheduled", "confirmed"]),
+  const [stats, { queue, error: queueError }] = await Promise.all([
+    loadAdminStats(supabase),
+    loadReviewQueue(supabase),
   ]);
-
-  const { data: applications, error: queueError } = await supabase
-    .from("tutor_applications")
-    .select("id, tutor_id, status, submitted_at")
-    .in("status", ["pending", "under_review", "needs_revision"])
-    .order("submitted_at", { ascending: true });
-
-  const tutorIds = (applications ?? []).map((application) => application.tutor_id);
-  const { data: applicants } = tutorIds.length > 0
-    ? await supabase.from("profiles").select("id, first_name, last_name").in("id", tutorIds)
-    : { data: [] };
-  const applicantById = new Map((applicants ?? []).map((applicant) => [applicant.id, applicant]));
-  const queue = (applications ?? []).map((application) => ({
-    ...application,
-    profiles: applicantById.get(application.tutor_id) ?? null,
-  }));
-
-  const stats = [
-    { label: "Students", value: totalStudents },
-    { label: "Tutor accounts", value: totalTutorAccounts },
-    { label: "Pending applications", value: pendingApplications },
-    { label: "Approved tutors", value: approvedTutors },
-    { label: "Rejected applications", value: rejectedApplications },
-    { label: "Upcoming appointments", value: upcomingAppointments },
-  ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -83,7 +46,7 @@ export default async function AdminDashboardPage() {
         ) : (
           <ul className="divide-y divide-border">
             {queue.map((app) => {
-              const applicant = Array.isArray(app.profiles) ? app.profiles[0] : app.profiles;
+              const applicant = unwrapRelation(app.profiles);
               return (
                 <li key={app.id} className="flex items-center justify-between py-3">
                   <div>
@@ -115,4 +78,69 @@ export default async function AdminDashboardPage() {
       </Card>
     </div>
   );
+}
+
+type Client = Awaited<ReturnType<typeof createClient>>;
+
+type Stat = { label: string; value: number | null };
+
+/** Head-count queries for the six dashboard metric cards. */
+async function loadAdminStats(supabase: Client): Promise<Stat[]> {
+  const [
+    { count: totalStudents },
+    { count: totalTutorAccounts },
+    { count: pendingApplications },
+    { count: approvedTutors },
+    { count: rejectedApplications },
+    { count: upcomingAppointments },
+  ] = await Promise.all([
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student"),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "tutor"),
+    supabase
+      .from("tutor_applications")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["pending", "under_review"]),
+    supabase.from("tutor_profiles").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("tutor_applications").select("id", { count: "exact", head: true }).eq("status", "rejected"),
+    supabase
+      .from("appointments")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["scheduled", "confirmed"]),
+  ]);
+
+  return [
+    { label: "Students", value: totalStudents },
+    { label: "Tutor accounts", value: totalTutorAccounts },
+    { label: "Pending applications", value: pendingApplications },
+    { label: "Approved tutors", value: approvedTutors },
+    { label: "Rejected applications", value: rejectedApplications },
+    { label: "Upcoming appointments", value: upcomingAppointments },
+  ];
+}
+
+/** Applications needing a decision, joined with the applicant's name. */
+async function loadReviewQueue(supabase: Client) {
+  const { data: applications, error } = await supabase
+    .from("tutor_applications")
+    .select("id, tutor_id, status, submitted_at")
+    .in("status", REVIEWABLE_APPLICATION_STATUSES)
+    .order("submitted_at", { ascending: true });
+
+  if (error || !applications) {
+    return { queue: [], error: error ?? new Error("No application rows returned.") };
+  }
+
+  const tutorIds = applications.map((application) => application.tutor_id);
+  const { data: applicants } =
+    tutorIds.length > 0
+      ? await supabase.from("profiles").select("id, first_name, last_name").in("id", tutorIds)
+      : { data: [] };
+
+  const applicantById = new Map((applicants ?? []).map((applicant) => [applicant.id, applicant]));
+  const queue = applications.map((application) => ({
+    ...application,
+    profiles: applicantById.get(application.tutor_id) ?? null,
+  }));
+
+  return { queue, error: null };
 }

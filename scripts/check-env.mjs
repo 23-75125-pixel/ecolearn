@@ -1,9 +1,14 @@
 import fs from "node:fs";
 
-if (fs.existsSync(".env")) {
-  for (const line of fs.readFileSync(".env", "utf8").split(/\r?\n/)) {
-    const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
-    if (match && !process.env[match[1]]) process.env[match[1]] = match[2].trim();
+// Match Next.js load order: `.env` first, then `.env.local` overrides it.
+// `.env.local` is what the README setup instructions actually tell people to
+// create, so only checking `.env` here would silently miss real credentials.
+for (const envFile of [".env", ".env.local"]) {
+  if (fs.existsSync(envFile)) {
+    for (const line of fs.readFileSync(envFile, "utf8").split(/\r?\n/)) {
+      const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
+      if (match && !process.env[match[1]]) process.env[match[1]] = match[2].trim();
+    }
   }
 }
 

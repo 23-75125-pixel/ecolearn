@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ROLE_HOME } from "@/lib/constants/roles";
 import type { AppRole } from "@/types/database.types";
 
 export type CurrentProfile = {
@@ -33,12 +34,6 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   return profile;
 }
 
-const ROLE_HOME: Record<AppRole, string> = {
-  student: "/student/dashboard",
-  tutor: "/tutor/dashboard",
-  admin: "/admin/dashboard",
-};
-
 /**
  * Server-side guard for a role-specific layout/page. `proxy.ts` already
  * redirects most misrouted requests before they get here — this is the
@@ -56,4 +51,15 @@ export async function requireRole(role: AppRole): Promise<CurrentProfile> {
     redirect(ROLE_HOME[profile.role]);
   }
   return profile;
+}
+
+/**
+ * Standard entry point for role-guarded Server Actions: verifies the
+ * caller's role and returns both the profile and an authenticated
+ * Supabase client, so every action starts with one line instead of two.
+ */
+export async function requireRoleClient(role: AppRole) {
+  const profile = await requireRole(role);
+  const supabase = await createClient();
+  return { profile, supabase };
 }

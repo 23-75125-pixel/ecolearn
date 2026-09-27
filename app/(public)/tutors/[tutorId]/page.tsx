@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { BookingForm } from "@/components/student/booking-form";
+import { unwrapRelation } from "@/lib/utils/relations";
 
 export default async function TutorProfilePage({
   params,
@@ -22,10 +23,10 @@ export default async function TutorProfilePage({
 
   if (!tutor) notFound();
 
-  const profile = Array.isArray(tutor.profiles) ? tutor.profiles[0] : tutor.profiles;
+  const profile = unwrapRelation(tutor.profiles);
   const subjects = (tutor.tutor_subjects ?? [])
-    .map((ts) => (Array.isArray(ts.subjects) ? ts.subjects[0]?.name : ts.subjects?.name))
-    .filter(Boolean);
+    .map((ts) => unwrapRelation(ts.subjects)?.name)
+    .filter((name): name is string => Boolean(name));
 
   const { data: slots } = await supabase
     .from("appointment_slots")
@@ -76,7 +77,7 @@ export default async function TutorProfilePage({
         ) : (
           <ul className="mt-4 divide-y divide-border">
             {slots.map((slot) => {
-              const subject = Array.isArray(slot.subjects) ? slot.subjects[0] : slot.subjects;
+              const subject = unwrapRelation(slot.subjects);
               return (
                 <li key={slot.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div><p className="font-medium text-foreground">{slot.slot_date}</p><p className="text-sm text-muted">{slot.start_time.slice(0, 5)} to {slot.end_time.slice(0, 5)}{subject?.name ? ` · ${subject.name}` : ""}</p></div>
