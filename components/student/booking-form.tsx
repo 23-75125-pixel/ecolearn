@@ -1,0 +1,24 @@
+"use client";
+
+import { useActionState } from "react";
+import { bookSlot, type BookingState } from "@/app/student/actions";
+import { Button } from "@/components/ui/button";
+import { ActionDialog } from "@/components/ui/action-dialog";
+import { CalendarCheck } from "lucide-react";
+import { ICON_INLINE, SUBTEXT } from "@/lib/ui/styles";
+
+export function BookingForm({ slotId, label }: { slotId: string; label: string }) {
+  const [state, action, pending] = useActionState(bookSlot, null as BookingState);
+  return (
+    <form action={action} className="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="slotId" value={slotId} />
+      <Button type="submit" size="sm" isLoading={pending}>
+        {!pending && <CalendarCheck className={ICON_INLINE} />}
+        Book {label}
+      </Button>
+      {state?.error && <span role="alert" className={SUBTEXT}>{state.error}</span>}
+      {state?.success && <span role="status" className={SUBTEXT}>{state.success}</span>}
+      <ActionDialog error={state?.error} success={state?.success} />
+    </form>
+  );
+}
