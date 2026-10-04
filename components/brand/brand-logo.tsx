@@ -11,7 +11,7 @@ export function BrandLogo({ href = "/" }: { href?: string }) {
       aria-label="Eco Learn home"
     >
       <Image
-        src="/logo.png"
+        src="/icon.png"
         alt=""
         width={28}
         height={28}
