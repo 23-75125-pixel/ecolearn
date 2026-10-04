@@ -1,7 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { ICON_INLINE, INTERACTIVE } from "@/lib/ui/styles";
+import { INTERACTIVE } from "@/lib/ui/styles";
 
 export function BrandLogo({ href = "/" }: { href?: string }) {
   return (
@@ -10,12 +10,15 @@ export function BrandLogo({ href = "/" }: { href?: string }) {
       className={cn("inline-flex items-center gap-2.5 rounded-md", INTERACTIVE)}
       aria-label="Eco Learn home"
     >
-      <span
-        aria-hidden="true"
-        className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-600 text-white dark:bg-brand-500"
-      >
-        <Leaf className={ICON_INLINE} />
-      </span>
+      <Image
+        src="/logo.png"
+        alt=""
+        width={28}
+        height={28}
+        quality={90}
+        className="h-7 w-7 rounded-md"
+        priority
+      />
       <span className="text-sm font-semibold">
         Eco <span className="font-medium text-zinc-500 dark:text-zinc-400">Learn</span>
       </span>
