@@ -69,11 +69,18 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
   }
 
+  // Signed-in users must not access the public homepage — redirect to their
+  // role dashboard. Only guests may view the landing page and footer.
+  if (user && role && pathname === "/") {
+    return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
+  }
+
   return response;
 }
 
 export const config = {
   matcher: [
+    "/",
     "/student/:path*",
     "/tutor/:path*",
     "/admin/:path*",
