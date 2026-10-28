@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   completeSignupSchema,
   forgotPasswordSchema,
+  loginSchema,
   registerSchema,
   resetPasswordSchema,
 } from "@/lib/validations/auth";
 import { parseUuid } from "@/lib/validations/common";
 import { hasValidFileSignature, parseApplicationForm } from "@/lib/validations/application";
-import { availabilitySchema } from "@/lib/validations/tutor";
+import { availabilitySchema, profileSchema, reviewReasonSchema } from "@/lib/validations/tutor";
 
 const validRegistration = {
   role: "student",
@@ -202,5 +203,103 @@ describe("completeSignupSchema", () => {
     expect(completeSignupSchema.safeParse({ acceptTerms: "yes", role: "tutor" }).success).toBe(true);
     expect(completeSignupSchema.safeParse({ role: "student" }).success).toBe(false);
     expect(completeSignupSchema.safeParse({ acceptTerms: "yes", role: "admin" }).success).toBe(false);
+  });
+
+  it("rejects missing terms acceptance", () => {
+    expect(completeSignupSchema.safeParse({}).success).toBe(false);
+    expect(completeSignupSchema.safeParse({ acceptTerms: "no" }).success).toBe(false);
+  });
+});
+
+describe("loginSchema", () => {
+  const validLogin = { email: "ana@example.com", password: "longenough1" };
+
+  it("accepts valid credentials", () => {
+    expect(loginSchema.safeParse(validLogin).success).toBe(true);
+  });
+
+  it("rejects empty email", () => {
+    expect(loginSchema.safeParse({ ...validLogin, email: "" }).success).toBe(false);
+  });
+
+  it("rejects invalid email format", () => {
+    expect(loginSchema.safeParse({ ...validLogin, email: "not-an-email" }).success).toBe(false);
+  });
+
+  it("rejects empty password", () => {
+    expect(loginSchema.safeParse({ ...validLogin, password: "" }).success).toBe(false);
+  });
+});
+
+describe("availabilitySchema", () => {
+  const valid = { dayDate: "2026-10-05", startTime: "09:00", endTime: "12:00", duration: "180", subjectId: "" };
+
+  it("accepts a normal window", () => {
+    expect(availabilitySchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("rejects an end time before the start time and odd durations", () => {
+    expect(availabilitySchema.safeParse({ ...valid, endTime: "08:00" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, duration: "7" }).success).toBe(false);
+  });
+
+  it("rejects missing required fields", () => {
+    expect(availabilitySchema.safeParse({ ...valid, dayDate: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, startTime: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, endTime: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, duration: "" }).success).toBe(false);
+  });
+
+  it("rejects invalid date and time formats", () => {
+    expect(availabilitySchema.safeParse({ ...valid, dayDate: "not-a-date" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, startTime: "9:00" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, endTime: "12:0" }).success).toBe(false);
+  });
+
+  it("rejects duration longer than one day", () => {
+    expect(availabilitySchema.safeParse({ ...valid, duration: "1441" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, duration: "-30" }).success).toBe(false);
+  });
+
+  it("accepts optional subjectId and rejects non-UUID subjectId", () => {
+    expect(availabilitySchema.safeParse({ ...valid, subjectId: "" }).success).toBe(true);
+    expect(availabilitySchema.safeParse({ ...valid, subjectId: "3f2504e0-4f89-41d3-9a0c-0305e82c3301" }).success).toBe(true);
+    expect(availabilitySchema.safeParse({ ...valid, subjectId: "not-a-uuid" }).success).toBe(false);
+  });
+
+  it("requires duration to match start and end time difference", () => {
+    expect(availabilitySchema.safeParse({ ...valid, startTime: "09:00", endTime: "10:30", duration: "60" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...valid, startTime: "09:00", endTime: "10:30", duration: "90" }).success).toBe(true);
+  });
+});
+
+describe("profileSchema", () => {
+  it("accepts valid headline and bio", () => {
+    expect(profileSchema.safeParse({ headline: "Math tutor", bio: "I love teaching" }).success).toBe(true);
+  });
+
+  it("accepts empty headline and bio (treated as not provided)", () => {
+    expect(profileSchema.safeParse({ headline: "", bio: "" }).success).toBe(true);
+  });
+
+  it("rejects headline over 150 characters", () => {
+    const longHeadline = "x".repeat(151);
+    expect(profileSchema.safeParse({ headline: longHeadline }).success).toBe(false);
+  });
+
+  it("rejects bio over 2000 characters", () => {
+    const longBio = "x".repeat(2001);
+    expect(profileSchema.safeParse({ bio: longBio }).success).toBe(false);
+  });
+});
+
+describe("reviewReasonSchema", () => {
+  it("accepts a short reason", () => {
+    expect(reviewReasonSchema.safeParse("Needs more detail").success).toBe(true);
+  });
+
+  it("rejects reason over 1000 characters", () => {
+    const longReason = "x".repeat(1001);
+    expect(reviewReasonSchema.safeParse(longReason).success).toBe(false);
   });
 });
