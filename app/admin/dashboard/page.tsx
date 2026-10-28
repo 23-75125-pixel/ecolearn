@@ -13,7 +13,20 @@ import {
   REVIEWABLE_APPLICATION_STATUSES,
 } from "@/lib/constants/status";
 import { unwrapRelation } from "@/lib/utils/relations";
+<<<<<<< HEAD
+import {
+  DIVIDE,
+  EMPTY_STATE,
+  ICON,
+  ICON_INLINE,
+  INTERACTIVE,
+  ITEM_TITLE,
+  SUBTEXT,
+  TITLE,
+} from "@/lib/ui/styles";
+=======
 import { DIVIDE, EMPTY_STATE, ICON, ITEM_TITLE, SUBTEXT, TITLE } from "@/lib/ui/styles";
+>>>>>>> origin/main
 import { cn } from "@/lib/utils/cn";
 
 export default async function AdminDashboardPage() {
@@ -30,10 +43,28 @@ export default async function AdminDashboardPage() {
 
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         {stats.map((stat) => (
+<<<<<<< HEAD
+          <Link
+            key={stat.label}
+            href={`/admin/metrics/${stat.slug}`}
+            aria-label={`View ${stat.label.toLowerCase()} data`}
+            className={cn("rounded-md", INTERACTIVE)}
+          >
+            <Card className="h-full p-4 transition-transform duration-150 hover:-translate-y-0.5">
+              <div className="flex items-start justify-between gap-2">
+                <p className={TITLE}>{stat.value ?? 0}</p>
+                <ArrowUpRight aria-hidden="true" className={ICON_INLINE} />
+              </div>
+              <p className={cn(SUBTEXT, "mt-1")}>{stat.label}</p>
+              <p className={cn(SUBTEXT, "mt-3 text-xs")}>View details</p>
+            </Card>
+          </Link>
+=======
           <Card key={stat.label} className="p-4">
             <p className={TITLE}>{stat.value}</p>
             <p className={cn(SUBTEXT, "mt-1")}>{stat.label}</p>
           </Card>
+>>>>>>> origin/main
         ))}
       </div>
 
@@ -88,7 +119,27 @@ export default async function AdminDashboardPage() {
   );
 }
 
+<<<<<<< HEAD
+type Stat = {
+  label: string;
+  slug: MetricSlug;
+  value: number | null;
+};
+
+export const METRIC_LABELS = {
+  students: "Students",
+  "tutor-accounts": "Tutor accounts",
+  "pending-applications": "Pending applications",
+  "approved-tutors": "Approved tutors",
+  "rejected-applications": "Rejected applications",
+  "upcoming-appointments": "Upcoming appointments",
+  availability: "Availability windows",
+} as const;
+
+export type MetricSlug = keyof typeof METRIC_LABELS;
+=======
 type Stat = { label: string; value: number | null };
+>>>>>>> origin/main
 
 /** Head-count queries for the six dashboard metric cards. */
 async function loadAdminStats(supabase: DbClient): Promise<Stat[]> {
@@ -99,6 +150,10 @@ async function loadAdminStats(supabase: DbClient): Promise<Stat[]> {
     { count: approvedTutors },
     { count: rejectedApplications },
     { count: upcomingAppointments },
+<<<<<<< HEAD
+    { count: availabilityWindows },
+=======
+>>>>>>> origin/main
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student"),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "tutor"),
@@ -112,6 +167,19 @@ async function loadAdminStats(supabase: DbClient): Promise<Stat[]> {
       .from("appointments")
       .select("id", { count: "exact", head: true })
       .in("status", ACTIVE_APPOINTMENT_STATUSES),
+<<<<<<< HEAD
+    supabase.from("availability").select("id", { count: "exact", head: true }),
+  ]);
+
+  return [
+    { label: "Students", slug: "students", value: totalStudents },
+    { label: "Tutor accounts", slug: "tutor-accounts", value: totalTutorAccounts },
+    { label: "Pending applications", slug: "pending-applications", value: pendingApplications },
+    { label: "Approved tutors", slug: "approved-tutors", value: approvedTutors },
+    { label: "Rejected applications", slug: "rejected-applications", value: rejectedApplications },
+    { label: "Upcoming appointments", slug: "upcoming-appointments", value: upcomingAppointments },
+    { label: "Availability windows", slug: "availability", value: availabilityWindows },
+=======
   ]);
 
   return [
@@ -121,6 +189,7 @@ async function loadAdminStats(supabase: DbClient): Promise<Stat[]> {
     { label: "Approved tutors", value: approvedTutors },
     { label: "Rejected applications", value: rejectedApplications },
     { label: "Upcoming appointments", value: upcomingAppointments },
+>>>>>>> origin/main
   ];
 }
 

@@ -13,8 +13,16 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     // Allow high-quality renders (quality={90}) and serve AVIF/WebP for crisp, small files.
+<<<<<<< HEAD
+    qualities: [75, 85, 88, 90],
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+    ],
+=======
     qualities: [75, 85, 90],
     formats: ["image/avif", "image/webp"],
+>>>>>>> origin/main
   },
   experimental: {
     serverActions: {

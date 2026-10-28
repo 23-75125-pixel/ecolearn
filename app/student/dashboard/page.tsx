@@ -1,5 +1,9 @@
 import Link from "next/link";
+<<<<<<< HEAD
+import { X } from "lucide-react";
+=======
 import { Search, X } from "lucide-react";
+>>>>>>> origin/main
 import { requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -33,8 +37,13 @@ export default async function StudentDashboardPage() {
       <h1 className={TITLE}>{profile.first_name ? `Welcome, ${profile.first_name}` : "Welcome"}</h1>
       <p className={cn(SUBTEXT, "mt-1")}>Here&apos;s what&apos;s coming up.</p>
 
+<<<<<<< HEAD
+      <div className="mt-8">
+        <Card>
+=======
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
+>>>>>>> origin/main
           <CardHeader>
             <CardTitle>Appointments</CardTitle>
             <CardDescription>Your scheduled sessions and appointment history.</CardDescription>
@@ -57,6 +66,8 @@ export default async function StudentDashboardPage() {
           )}
         </Card>
 
+<<<<<<< HEAD
+=======
         <Card>
           <CardHeader>
             <CardTitle>Quick actions</CardTitle>
@@ -67,6 +78,7 @@ export default async function StudentDashboardPage() {
           </Link>
           <p className={cn(SUBTEXT, "mt-4 leading-6")}>Book sessions, review past appointments, and manage cancellations from this dashboard.</p>
         </Card>
+>>>>>>> origin/main
       </div>
 
       <Card className="mt-6">

@@ -10,10 +10,24 @@ export type CurrentProfile = {
   role: AppRole;
   first_name: string;
   last_name: string;
+<<<<<<< HEAD
+  avatar_url: string | null;
+=======
+>>>>>>> origin/main
   /** False until the user has accepted the Terms and Privacy Policy. */
   termsAccepted: boolean;
 };
 
+<<<<<<< HEAD
+export class SessionUnavailableError extends Error {
+  constructor() {
+    super("Authentication service is temporarily unavailable.");
+    this.name = "SessionUnavailableError";
+  }
+}
+
+=======
+>>>>>>> origin/main
 /**
  * Reads the current user's profile from the database (not just the JWT),
  * so a role change by an admin takes effect immediately rather than
@@ -25,6 +39,32 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> 
   const supabase = await createClient();
   const {
     data: { user },
+<<<<<<< HEAD
+    error,
+  } = await supabase.auth.getUser();
+  if (error) {
+    console.warn("Supabase auth verification unavailable:", error.message);
+    throw new SessionUnavailableError();
+  }
+  if (!user) return null;
+
+  const [{ data: profile, error: profileError }, { data: termsAccepted, error: termsError }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("id, role, first_name, last_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase.rpc("has_accepted_terms"),
+  ]);
+  if (profileError || termsError) {
+    console.warn(
+      "Current account authorization lookup failed:",
+      profileError?.message ?? termsError?.message,
+    );
+    throw new SessionUnavailableError();
+  }
+=======
   } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -32,6 +72,7 @@ export const getCurrentProfile = cache(async (): Promise<CurrentProfile | null> 
     supabase.from("profiles").select("id, role, first_name, last_name").eq("id", user.id).maybeSingle(),
     supabase.rpc("has_accepted_terms"),
   ]);
+>>>>>>> origin/main
   if (!profile) return null;
 
   return { ...profile, termsAccepted: termsAccepted === true };

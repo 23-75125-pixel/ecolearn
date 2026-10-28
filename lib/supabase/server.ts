@@ -3,6 +3,20 @@ import { cookies } from "next/headers";
 import type { Database } from "@/types/database.types";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
+<<<<<<< HEAD
+const SUPABASE_REQUEST_TIMEOUT_MS = 5_000;
+
+function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit) {
+  const timeout = AbortSignal.timeout(SUPABASE_REQUEST_TIMEOUT_MS);
+  const signal = init?.signal
+    ? AbortSignal.any([init.signal, timeout])
+    : timeout;
+
+  return fetch(input, { ...init, signal });
+}
+
+=======
+>>>>>>> origin/main
 /**
  * Supabase client for Server Components, Server Actions, and Route
  * Handlers. Reads/writes auth cookies via `next/headers`. `cookies()` is
@@ -20,6 +34,10 @@ export async function createClient() {
     url,
     anonKey,
     {
+<<<<<<< HEAD
+      global: { fetch: fetchWithTimeout },
+=======
+>>>>>>> origin/main
       cookies: {
         getAll() {
           return cookieStore.getAll();

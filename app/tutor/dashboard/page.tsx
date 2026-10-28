@@ -160,9 +160,15 @@ export default async function TutorDashboardPage() {
         <Badge tone="success">Approved tutor</Badge>
       </div>
 
+<<<<<<< HEAD
+      <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-2">
+        <AppointmentsCard appointments={appointments} />
+        <Card className="min-w-0">
+=======
       <div className="mt-8 grid gap-6 sm:grid-cols-2">
         <AppointmentsCard appointments={appointments} />
         <Card>
+>>>>>>> origin/main
           <CardHeader>
             <CardTitle>Availability</CardTitle>
             <CardDescription>Manage your bookable schedule.</CardDescription>
