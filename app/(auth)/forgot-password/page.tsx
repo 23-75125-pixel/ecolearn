@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { requestPasswordReset, type FormState } from "../actions";
@@ -12,11 +12,16 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { ActionDialog } from "@/components/ui/action-dialog";
 import { ICON, SUBTEXT, TEXT_LINK } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
+import { forgotPasswordSchema } from "@/lib/validations/auth";
 
 const initialState: FormState = null;
 
 export default function ForgotPasswordPage() {
   const [state, formAction, isPending] = useActionState(requestPasswordReset, initialState);
+  const [email, setEmail] = useState("");
+
+  // Client-side validation so the submit button is only enabled for a valid email.
+  const isEmailValid = forgotPasswordSchema.safeParse({ email }).success;
 
   if (state?.message) {
     return (
@@ -49,12 +54,23 @@ export default function ForgotPasswordPage() {
           <Label htmlFor="email">Email</Label>
           <div className="relative">
             <Mail aria-hidden="true" className={cn(ICON, "pointer-events-none absolute left-3 top-3")} />
-            <Input id="email" name="email" type="email" autoComplete="email" placeholder="juan@example.com" required invalid={!!state?.fieldErrors?.email} className="pl-10" />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="juan@example.com"
+              required
+              invalid={!!state?.fieldErrors?.email}
+              className="pl-10"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
           </div>
           <FieldError>{state?.fieldErrors?.email}</FieldError>
         </div>
 
-        <Button type="submit" className="w-full" isLoading={isPending}>
+        <Button type="submit" className="w-full" isLoading={isPending} disabled={!isEmailValid || isPending}>
           Send reset link
         </Button>
         <ActionDialog error={state?.error} />
