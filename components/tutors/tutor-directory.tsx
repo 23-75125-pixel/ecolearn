@@ -10,7 +10,10 @@ import { Select } from "@/components/ui/select";
 import { BORDER, EMPTY_STATE, ICON, INTERACTIVE, ITEM_TITLE, SUBTEXT, SURFACE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 import { unwrapRelation } from "@/lib/utils/relations";
+<<<<<<< HEAD
 import { ProfileAvatar } from "@/components/ui/profile-avatar";
+=======
+>>>>>>> origin/main
 
 type Relation<T> = T | T[] | null;
 
@@ -18,7 +21,11 @@ type Tutor = {
   id: string;
   headline: string | null;
   bio: string | null;
+<<<<<<< HEAD
   profiles: Relation<{ first_name: string; last_name: string; avatar_url: string | null }>;
+=======
+  profiles: Relation<{ first_name: string; last_name: string }>;
+>>>>>>> origin/main
   tutor_subjects: { subjects: Relation<{ name: string }> }[];
 };
 
@@ -30,6 +37,7 @@ function toListItem(tutor: Tutor) {
     .filter((name): name is string => Boolean(name));
   const fullName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim();
 
+<<<<<<< HEAD
   return { tutor, fullName, subjectNames };
 }
 
@@ -39,6 +47,16 @@ export function TutorDirectory({ tutors, initialSubject }: { tutors: Tutor[]; in
   const [subject, setSubject] = useState(() =>
     initialSubject && items.some((item) => item.subjectNames.includes(initialSubject)) ? initialSubject : "all",
   );
+=======
+  return { tutor, fullName, initial: profile?.first_name?.[0] ?? "?", subjectNames };
+}
+
+export function TutorDirectory({ tutors }: { tutors: Tutor[] }) {
+  const [query, setQuery] = useState("");
+  const [subject, setSubject] = useState("all");
+
+  const items = useMemo(() => tutors.map(toListItem), [tutors]);
+>>>>>>> origin/main
   const allSubjects = useMemo(
     () => Array.from(new Set(items.flatMap((item) => item.subjectNames))).sort(),
     [items],
@@ -83,6 +101,7 @@ export function TutorDirectory({ tutors, initialSubject }: { tutors: Tutor[]; in
         <div className={cn(EMPTY_STATE, "mt-8")}>No tutors match those filters.</div>
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+<<<<<<< HEAD
           {visibleItems.map(({ tutor, fullName, subjectNames }) => (
             <Link key={tutor.id} href={`/tutors/${tutor.id}`} className={cn("block rounded-md", INTERACTIVE)}>
               <Card className="h-full">
@@ -93,6 +112,18 @@ export function TutorDirectory({ tutors, initialSubject }: { tutors: Tutor[]; in
                     avatarUrl={unwrapRelation(tutor.profiles)?.avatar_url}
                     size="md"
                   />
+=======
+          {visibleItems.map(({ tutor, fullName, initial, subjectNames }) => (
+            <Link key={tutor.id} href={`/tutors/${tutor.id}`} className={cn("block rounded-md", INTERACTIVE)}>
+              <Card className="h-full">
+                <div className="flex items-center gap-3">
+                  <div
+                    aria-hidden="true"
+                    className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-sm font-medium", BORDER, SURFACE)}
+                  >
+                    {initial}
+                  </div>
+>>>>>>> origin/main
                   <div className="min-w-0 space-y-1">
                     <p className={ITEM_TITLE}>{fullName}</p>
                     <Badge tone="success">Verified tutor</Badge>

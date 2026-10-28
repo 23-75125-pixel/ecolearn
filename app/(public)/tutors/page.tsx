@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TutorDirectory } from "@/components/tutors/tutor-directory";
 import { SUBTEXT, TITLE } from "@/lib/ui/styles";
 
+<<<<<<< HEAD
 export default async function TutorsPage({
   searchParams,
 }: {
@@ -9,6 +10,9 @@ export default async function TutorsPage({
 }) {
   const { subject } = await searchParams;
   const initialSubject = typeof subject === "string" ? subject : undefined;
+=======
+export default async function TutorsPage() {
+>>>>>>> origin/main
   const supabase = await createClient();
 
   // RLS: tutor_profiles_select_public only returns rows where is_active is
@@ -17,7 +21,11 @@ export default async function TutorsPage({
   const { data: tutors } = await supabase
     .from("tutor_profiles")
     .select(
+<<<<<<< HEAD
       "id, headline, bio, profiles(first_name, last_name, avatar_url), tutor_subjects(subjects(name))",
+=======
+      "id, headline, bio, profiles(first_name, last_name), tutor_subjects(subjects(name))",
+>>>>>>> origin/main
     )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
@@ -29,7 +37,11 @@ export default async function TutorsPage({
         Every tutor listed here has been reviewed and approved by an ECoLearn administrator.
       </p>
 
+<<<<<<< HEAD
       <TutorDirectory tutors={tutors ?? []} initialSubject={initialSubject} />
+=======
+      <TutorDirectory tutors={tutors ?? []} />
+>>>>>>> origin/main
     </div>
   );
 }

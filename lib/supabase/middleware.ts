@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database.types";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
+<<<<<<< HEAD
 const SUPABASE_REQUEST_TIMEOUT_MS = 5_000;
 
 function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit) {
@@ -14,6 +15,8 @@ function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit) {
   return fetch(input, { ...init, signal });
 }
 
+=======
+>>>>>>> origin/main
 /**
  * Refreshes the Supabase auth session on every request and returns both the
  * (possibly updated) response and a Supabase client bound to it, so proxy.ts
@@ -29,7 +32,10 @@ export async function updateSession(request: NextRequest) {
     url,
     anonKey,
     {
+<<<<<<< HEAD
       global: { fetch: fetchWithTimeout },
+=======
+>>>>>>> origin/main
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -47,6 +53,7 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
+<<<<<<< HEAD
   // IMPORTANT: do not replace this with getSession(). A session read only
   // trusts the cookie; getUser() verifies the token with Supabase Auth before
   // this request is allowed to enter a protected role section.
@@ -56,4 +63,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   return { response, supabase, user: user ?? null, authError: error ?? null };
+=======
+  // IMPORTANT: do not remove. This revalidates the session against Supabase
+  // Auth (not just the local JWT), which is what actually refreshes an
+  // expiring session cookie.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return { response, supabase, user };
+>>>>>>> origin/main
 }

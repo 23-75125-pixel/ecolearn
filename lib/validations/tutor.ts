@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { emptyToUndefined } from "@/lib/validations/common";
 
+<<<<<<< HEAD
+=======
+export const SLOT_DURATIONS = [30, 45, 60, 90] as const;
+
+>>>>>>> origin/main
 const optionalText = (max: number) =>
   z.preprocess(emptyToUndefined, z.string().trim().max(max).optional());
 
@@ -11,14 +16,19 @@ export const availabilitySchema = z
     endTime: z.string().regex(/^\d{2}:\d{2}$/, "Choose an end time."),
     duration: z.coerce
       .number()
+<<<<<<< HEAD
       .int("Slot length must be a whole number of minutes.")
       .positive("Slot length must be greater than zero.")
       .max(1440, "Slot length cannot exceed one day."),
+=======
+      .refine((value) => (SLOT_DURATIONS as readonly number[]).includes(value), "Choose a slot length."),
+>>>>>>> origin/main
     subjectId: z.preprocess(emptyToUndefined, z.uuid().optional()),
   })
   .refine((data) => data.endTime > data.startTime, {
     message: "The end time must be after the start time.",
     path: ["endTime"],
+<<<<<<< HEAD
   })
   .refine(
     (data) => data.duration === getTimeDifferenceMinutes(data.startTime, data.endTime),
@@ -33,6 +43,9 @@ function getTimeDifferenceMinutes(startTime: string, endTime: string) {
   const [endHours, endMinutes] = endTime.split(":").map(Number);
   return endHours * 60 + endMinutes - (startHours * 60 + startMinutes);
 }
+=======
+  });
+>>>>>>> origin/main
 
 export const profileSchema = z.object({
   headline: optionalText(150),
