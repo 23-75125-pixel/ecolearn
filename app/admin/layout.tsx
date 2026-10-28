@@ -3,10 +3,7 @@ import { requireRole } from "@/lib/auth/session";
 import { Navbar } from "@/components/nav/navbar";
 import { SignOutButton } from "@/components/nav/sign-out-button";
 import { SUBTEXT } from "@/lib/ui/styles";
-<<<<<<< HEAD
 import { ProfileAvatar } from "@/components/ui/profile-avatar";
-=======
->>>>>>> origin/main
 
 const ADMIN_LINKS = [{ href: "/admin/dashboard", label: "Dashboard" }];
 
@@ -19,11 +16,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         brandHref="/admin/dashboard"
         links={ADMIN_LINKS}
         rightSlot={
-          <div className="flex items-center gap-3">
-<<<<<<< HEAD
+          <div className="flex items-center gap_3">
             <ProfileAvatar firstName={profile.first_name} lastName={profile.last_name} avatarUrl={profile.avatar_url} size="sm" />
-=======
->>>>>>> origin/main
             <span className={SUBTEXT}>{profile.first_name}</span>
             <SignOutButton />
           </div>

@@ -18,14 +18,14 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-<<<<<<< HEAD
 /* Faint dot grid behind the hero; fades out toward the edges. */
 .hero-grid {
   background-image: radial-gradient(circle at 1px 1px, rgb(113 113 122 / 0.28) 1px, transparent 0);
   background-size: 24px 24px;
   mask-image: radial-gradient(ellipse 75% 70% at 50% 25%, black 20%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 25%, black 20%, transparent 75%);
-=======
+}
+
 /* Marquee (paused on hover; the reduced-motion rule below collapses durations). */
 @keyframes marquee-x {
   from {
@@ -56,7 +56,6 @@
 .marquee:hover .animate-marquee,
 .marquee:hover .animate-marquee-reverse {
   animation-play-state: paused;
->>>>>>> origin/main
 }
 
 @keyframes fade-up {

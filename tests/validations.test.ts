@@ -157,7 +157,7 @@ describe("hasValidFileSignature", () => {
 });
 
 describe("availabilitySchema", () => {
-  const valid = { dayDate: "2026-10-05", startTime: "09:00", endTime: "12:00", duration: "60", subjectId: "" };
+  const valid = { dayDate: "2026-10-05", startTime: "09:00", endTime: "12:00", duration: "180", subjectId: "" };
 
   it("accepts a normal window", () => {
     expect(availabilitySchema.safeParse(valid).success).toBe(true);

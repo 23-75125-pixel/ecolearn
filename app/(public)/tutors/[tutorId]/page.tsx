@@ -2,14 +2,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { BookingForm } from "@/components/student/booking-form";
-<<<<<<< HEAD
 import { ProfileAvatar } from "@/components/ui/profile-avatar";
 import { unwrapRelation } from "@/lib/utils/relations";
 import { BORDER, DIVIDE, ITEM_TITLE, SECTION, SUBTEXT, TITLE } from "@/lib/ui/styles";
-=======
-import { unwrapRelation } from "@/lib/utils/relations";
-import { BORDER, DIVIDE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
->>>>>>> origin/main
 import { cn } from "@/lib/utils/cn";
 import { shortTime, todayInAppTimeZone } from "@/lib/utils/datetime";
 import { uuidSchema } from "@/lib/validations/common";
@@ -27,11 +22,7 @@ export default async function TutorProfilePage({
   const { data: tutor } = await supabase
     .from("tutor_profiles")
     .select(
-<<<<<<< HEAD
       "id, headline, bio, profiles(first_name, last_name, avatar_url), tutor_subjects(subjects(name))",
-=======
-      "id, headline, bio, profiles(first_name, last_name), tutor_subjects(subjects(name))",
->>>>>>> origin/main
     )
     .eq("id", tutorId)
     .eq("is_active", true)
@@ -57,21 +48,12 @@ export default async function TutorProfilePage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <div className="flex items-center gap-4">
-<<<<<<< HEAD
         <ProfileAvatar
           firstName={profile?.first_name}
           lastName={profile?.last_name}
           avatarUrl={profile?.avatar_url}
           size="lg"
         />
-=======
-        <div
-          aria-hidden="true"
-          className={cn("flex h-14 w-14 items-center justify-center rounded-md text-xl font-medium", BORDER, SURFACE)}
-        >
-          {profile?.first_name?.[0] ?? "?"}
-        </div>
->>>>>>> origin/main
         <div className="space-y-1.5">
           <h1 className={TITLE}>
             {profile?.first_name} {profile?.last_name}

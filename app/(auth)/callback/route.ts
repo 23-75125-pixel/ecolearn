@@ -27,15 +27,11 @@ export async function GET(request: NextRequest) {
 
       const {
         data: { user },
-<<<<<<< HEAD
         error: userError,
       } = await supabase.auth.getUser();
       if (userError) {
         return NextResponse.redirect(new URL("/login?notice=sign_in_failed", origin));
       }
-=======
-      } = await supabase.auth.getUser();
->>>>>>> origin/main
       const { data: profile } = user
         ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
         : { data: null };

@@ -12,12 +12,8 @@ import {
   ShieldCheck,
   Sigma,
 } from "lucide-react";
-<<<<<<< HEAD
 import { SubjectExplorer } from "@/components/landing/subject-explorer";
 import { SessionGallery } from "@/components/landing/session-gallery";
-=======
-import { ShowcaseMarquee } from "@/components/landing/showcase-marquee";
->>>>>>> origin/main
 import { PersonaTabs } from "@/components/landing/persona-tabs";
 import { FaqSection } from "@/components/landing/faq-accordion";
 import { HeroVisual } from "@/components/landing/hero-visual";
@@ -118,14 +114,9 @@ const STEPS = [
 export default function HomePage() {
   return (
     <div className="overflow-hidden">
-<<<<<<< HEAD
       {/* Hero: staggered copy on the left, photo and interactive booking preview on the right */}
       <section className="relative">
         <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
-=======
-      {/* Hero — split layout: staggered copy on the left, photo composition on the right */}
-      <section className="relative">
->>>>>>> origin/main
         <div className="relative mx-auto grid max-w-6xl items-center gap-16 px-4 pb-14 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-16 lg:pt-24">
           <div className="text-center lg:text-left">
             <h1 className={cn(TITLE, "text-balance")}>
@@ -151,20 +142,11 @@ export default function HomePage() {
           </div>
           <HeroVisual />
         </div>
-<<<<<<< HEAD
       </section>
 
       {/* Subjects: one consistent illustration set, one tab per subject */}
       <SubjectExplorer />
 
-=======
-        {/* Showcase wall — two slow marquee rows, pause on hover */}
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <ShowcaseMarquee />
-        </div>
-      </section>
-
->>>>>>> origin/main
       {/* Real-world message */}
       <section id="real-world" className={cn("border-y", BORDER_COLOR)}>
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
@@ -216,7 +198,6 @@ export default function HomePage() {
         </div>
       </section>
 
-<<<<<<< HEAD
       {/* Sessions */}
       <div className="mt-14">
         <SessionGallery />
@@ -224,10 +205,6 @@ export default function HomePage() {
 
       {/* How it works */}
       <section id="how-it-works" className={cn("border-y", BORDER_COLOR)}>
-=======
-      {/* How it works */}
-      <section id="how-it-works" className={cn("mt-14 border-y", BORDER_COLOR)}>
->>>>>>> origin/main
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
           <SectionHeading title="Simple steps. Better support." />
           <div className="mt-10 grid gap-4 md:grid-cols-3">
