@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { buttonClasses } from "@/components/ui/button";
 import {
   ACTIVE_APPOINTMENT_STATUSES,
@@ -16,8 +17,9 @@ import type { DbClient } from "@/lib/supabase/types";
 import { shortTime } from "@/lib/utils/datetime";
 import { cancelAppointment } from "@/app/student/actions";
 import { NotificationList } from "@/components/notifications/notification-list";
-import { DIVIDE, EMPTY_STATE, ICON, ITEM_TITLE, SUBTEXT, TEXT_LINK, TITLE } from "@/lib/ui/styles";
+import { DIVIDE, EMPTY_STATE, ICON, ICON_INLINE, ITEM_TITLE, SUBTEXT, TEXT_LINK, TITLE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
+import { ArrowRight } from "lucide-react";
 
 export default async function StudentDashboardPage() {
   const profile = await requireRole("student");
@@ -57,6 +59,15 @@ export default async function StudentDashboardPage() {
           )}
         </Card>
 
+        {/* Always-visible Find a tutor button */}
+        <div className="mt-6">
+          <Link href="/tutors">
+            <Button className="w-full">
+              <ArrowRight className={ICON_INLINE} />
+              Find a tutor
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="mt-6">

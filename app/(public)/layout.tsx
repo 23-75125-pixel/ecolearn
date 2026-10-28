@@ -12,14 +12,10 @@ const PUBLIC_LINKS = [
 ];
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const profile = await getCurrentProfile().catch((error: unknown) => {
+  const _profile = await getCurrentProfile().catch((error: unknown) => {
     if (error instanceof SessionUnavailableError) return null;
     throw error;
   });
-
-  // Signed-in users must not access public pages — proxy.ts redirects them
-  // to their role dashboard. This layout only renders for guests.
-  if (profile) return null;
 
   return (
     <div className="flex min-h-screen flex-col">
