@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { Navbar } from "@/components/nav/navbar";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { buttonClasses } from "@/components/ui/button";
-import { getCurrentProfile, SessionUnavailableError } from "@/lib/auth/session";
 
 const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
@@ -12,11 +11,6 @@ const PUBLIC_LINKS = [
 ];
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  const _profile = await getCurrentProfile().catch((error: unknown) => {
-    if (error instanceof SessionUnavailableError) return null;
-    throw error;
-  });
-
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar
