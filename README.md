@@ -6,6 +6,8 @@ appointments (thesis/capstone project).
 Architecture, schema, and RLS strategy are documented in
 [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) - read that first if
 you're extending this project. This README covers day-to-day setup.
+The complete presentation and test setup is documented in
+[`testing.md`](./testing.md).
 
 ## Tech stack
 
@@ -53,11 +55,19 @@ you're extending this project. This README covers day-to-day setup.
    ```
 
    Against a hosted Supabase project, either `supabase link` then
-   `supabase db push`, or paste the contents of
-   each file in `supabase/migrations/` (`0001` to `0010`, in that order)
-   into the SQL Editor. Run `supabase/seed/seed.sql` the same way if you
-   want demo data - **local/dev projects only** (see the warning at the
-   top of that file).
+   `supabase db push`, or paste the contents of each file in
+   `supabase/migrations/` (`0001` to `0010`, in that order) into the SQL
+   Editor. If the project is already linked, the remote command is:
+
+   ```bash
+   npx supabase@latest db push --remote
+   ```
+
+   Run `supabase/seed/seed.sql` the same way if you want demo data -
+   **local/dev projects only** (see the warning at the top of that file).
+   Migration `0010_sync_session_modes.sql` repairs open slots whose session
+   mode does not match their availability while preserving the session-mode
+   snapshot of already-booked appointments.
 
 4. **Run the app:**
 
@@ -191,12 +201,26 @@ people the same meeting link or place.
 
 ## Tests
 
+The project has unit, database, and browser-level tests. The browser
+automation uses Selenium WebDriver 4, Python `unittest`, Chrome/Chromium, and
+Selenium Manager or ChromeDriver. See [`testing.md`](./testing.md) for
+installation steps, focused selectors, presentation commands, and
+troubleshooting.
+
 ```bash
 npm test             # unit tests (Vitest): validation, access rules, appointment rules
 npm run typecheck    # TypeScript
 npm run lint         # ESLint
+npm run build        # production build
 npm run test:db      # database tests (needs DATABASE_URL, see below)
 npm run test:e2e     # browser tests (Selenium, see below)
+```
+
+The current baseline is:
+
+```text
+9 test files passed
+139 tests passed
 ```
 
 **Database tests** (`supabase/tests/session_flow.test.sql`) check booking,
@@ -213,23 +237,29 @@ use accounts already stored in the target database. They need Python 3.9+ and
 Chrome or Chromium:
 
 ```bash
-pip install -r selenium_tests/requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r selenium_tests/requirements.txt
 npm run build && npm run start        # in another terminal
-E2E_PASSWORD='your-test-password' \
-E2E_ADMIN_EMAIL='admin@example.com' E2E_ADMIN_NAME='Admin User' \
-E2E_STUDENT_EMAIL='student@example.com' E2E_STUDENT_NAME='Student User' \
-E2E_TUTOR_EMAIL='tutor@example.com' E2E_TUTOR_NAME='Approved Tutor' \
 npm run test:e2e
 ```
 
 The suite does not use or require the demo accounts from
-`supabase/seed/seed.sql`. It signs in with the supplied accounts and creates
-test accounts, availability windows and bookings in the target database. Use a
-test project or test accounts rather than production accounts because the
-tests change database state. Each role may use a different password with
-`E2E_<ROLE>_PASSWORD`; otherwise all roles use `E2E_PASSWORD`. Scenarios requiring a second student or separate pending/revision tutor
-accounts are skipped because this suite is configured for these three accounts
-only.
+`supabase/seed/seed.sql`. It signs in with the supplied three accounts and
+creates availability windows and bookings in the target database. Use a test
+project or test accounts rather than production accounts because the tests
+change database state. The required roles are:
+
+| Role | Required account state |
+|---|---|
+| Admin | Existing account with the `admin` profile role |
+| Tutor | Existing account with an approved, active tutor profile |
+| Student | Existing account that has accepted the Terms |
+
+Each role may use a different password with `E2E_<ROLE>_PASSWORD`; otherwise
+all roles use `E2E_PASSWORD`. Scenarios requiring a second student or separate
+pending/revision tutor accounts are explicitly skipped because this suite is
+configured for these three accounts only.
 
 Other options are `BASE_URL`, `HEADED=1`, `CHROMIUM_BINARY`,
 `CHROMEDRIVER_BINARY`, and `EMAIL_CONFIRMATION_REQUIRED=1` when the project
@@ -244,10 +274,15 @@ identify a dedicated test account with the `admin` profile role. Do not use a
 personal or production account for browser tests.
 
 For local development, copy `.env.e2e.example` to `.env.e2e.local`, replace
-the three account emails, names, and test password, then run
-`npm run test:e2e`. The runner loads `.env.e2e.local` automatically without
-displaying its values. You can use a different file with
+the three account emails, names, and passwords, then run `npm run test:e2e`.
+The runner loads `.env.e2e.local` automatically without displaying its
+values. You can use a different file with
 `E2E_ENV_FILE=/path/to/file npm run test:e2e`.
+
+For CI, the quality workflow runs lint, type-checking, unit tests, the
+production build, and dependency auditing. The E2E job is opt-in: set the
+repository variable `E2E_ENABLED=1` only after configuring the three E2E
+accounts as repository secrets.
 
 ## Development commands
 
