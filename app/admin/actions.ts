@@ -5,8 +5,53 @@ import { redirect } from "next/navigation";
 import { requireRoleClient } from "@/lib/auth/session";
 import { parseUuid } from "@/lib/validations/common";
 import { reviewReasonSchema } from "@/lib/validations/tutor";
+import { z } from "zod";
 
 export type ReviewFormState = { error?: string } | null;
+export type SubjectFormState = { error?: string; success?: string } | null;
+
+const subjectNameSchema = z.string().trim().min(2, "Subject name must be at least 2 characters.").max(80, "Subject name must be at most 80 characters.");
+
+function makeSubjectSlug(name: string) {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export async function createSubject(
+  _previous: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
+  const { supabase } = await requireRoleClient("admin");
+  const parsed = subjectNameSchema.safeParse(formData.get("name"));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const name = parsed.data;
+  const slug = makeSubjectSlug(name);
+  if (!slug) return { error: "Subject name must contain letters or numbers." };
+
+  const { error } = await supabase.from("subjects").insert({ name, slug, is_active: true });
+  if (error) {
+    if (error.code === "23505") return { error: "A subject with this name already exists." };
+    return { error: "Unable to add this subject. Please try again." };
+  }
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/");
+  return { success: "Subject added." };
+}
+
+export async function setSubjectActive(
+  _previous: SubjectFormState,
+  formData: FormData,
+): Promise<SubjectFormState> {
+  const { supabase } = await requireRoleClient("admin");
+  const subjectId = parseUuid(formData, "subjectId");
+  if (!subjectId) return { error: "This subject could not be found." };
+  const isActive = formData.get("isActive") === "true";
+  const { error } = await supabase.from("subjects").update({ is_active: isActive }).eq("id", subjectId);
+  if (error) return { error: "Unable to update this subject. Please try again." };
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/");
+  revalidatePath("/tutor/dashboard");
+  return { success: isActive ? "Subject activated." : "Subject hidden." };
+}
 
 /**
  * Every action here re-checks that the caller is an admin before touching

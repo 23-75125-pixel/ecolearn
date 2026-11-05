@@ -6,7 +6,7 @@ import type { DbClient } from "@/lib/supabase/types";
 import type { AppointmentActionState } from "@/lib/appointments/types";
 import { appTimeToDate } from "@/lib/utils/datetime";
 import { friendlyDatabaseMessage } from "@/lib/utils/db-errors";
-import { parseUuid } from "@/lib/validations/common";
+import { parseUuid, uuidSchema } from "@/lib/validations/common";
 import {
   CREDENTIAL_FILE_TYPES,
   hasValidFileSignature,
@@ -164,6 +164,51 @@ export async function saveTutorApplication(
 
   revalidatePath("/tutor/dashboard");
   return { success: "Your application was submitted for admin review." };
+}
+
+export async function saveTutorSubjects(
+  _previous: TutorFormState,
+  formData: FormData,
+): Promise<TutorFormState> {
+  const { profile, supabase } = await requireRoleClient("tutor");
+  const subjectIds = formData
+    .getAll("subjectIds")
+    .map((value) => uuidSchema.safeParse(value))
+    .filter((result): result is { success: true; data: string } => result.success)
+    .map((result) => result.data);
+  if (subjectIds.length === 0) return { error: "Choose at least one subject." };
+
+  const uniqueSubjectIds = [...new Set(subjectIds)];
+  const { data: activeSubjects, error: subjectsError } = await supabase
+    .from("subjects")
+    .select("id")
+    .eq("is_active", true)
+    .in("id", uniqueSubjectIds);
+  if (subjectsError || activeSubjects.length !== uniqueSubjectIds.length) {
+    return { error: "Choose only active subjects from the catalog." };
+  }
+
+  const { data: tutorProfile } = await supabase
+    .from("tutor_profiles")
+    .select("id")
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+  if (!tutorProfile) return { error: "Your tutor profile is not ready yet." };
+
+  const { error: deleteError } = await supabase
+    .from("tutor_subjects")
+    .delete()
+    .eq("tutor_profile_id", tutorProfile.id);
+  if (deleteError) return { error: "Unable to update your subjects. Please try again." };
+
+  const { error: insertError } = await supabase.from("tutor_subjects").insert(
+    uniqueSubjectIds.map((subject_id) => ({ tutor_profile_id: tutorProfile.id, subject_id })),
+  );
+  if (insertError) return { error: "Unable to save your subjects. Please try again." };
+
+  revalidatePath("/tutor/dashboard");
+  revalidatePath("/tutors");
+  return { success: "Your subjects were updated." };
 }
 
 /* ---------------------------------------------------------------------------

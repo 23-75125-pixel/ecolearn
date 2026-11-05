@@ -15,6 +15,7 @@ import { ApplicationForm } from "@/components/tutor/application-form";
 import { AvailabilityManager } from "@/components/tutor/availability-manager";
 import { NotificationList } from "@/components/notifications/notification-list";
 import { ProfileEditor } from "@/components/tutor/profile-editor";
+import { SubjectSelector } from "@/components/tutor/subject-selector";
 import { EMPTY_STATE, ITEM_TITLE, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 import { AppointmentList } from "@/components/appointments/appointment-list";
@@ -181,6 +182,15 @@ export default async function TutorDashboardPage() {
             <CardDescription>Choose when you teach and how: online on a meeting link, or in person.</CardDescription>
           </CardHeader>
           <AvailabilityManager availability={availability} subjects={subjects} />
+        </Card>
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Subjects you teach</CardTitle>
+          </CardHeader>
+          <SubjectSelector
+            subjects={subjects}
+            selectedSubjectIds={tutorProfile.tutor_subjects.map((subject) => subject.subject_id)}
+          />
         </Card>
       </div>
 

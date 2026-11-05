@@ -21,6 +21,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { BORDER, BORDER_COLOR, ICON, ICON_INLINE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 import type { CSSProperties } from "react";
+import { createClient } from "@/lib/supabase/server";
+import { getActiveSubjects } from "@/lib/queries/shared";
 
 const HEADLINE_WORDS = ["Learn", "anything", "you", "set", "your", "mind", "to."];
 
@@ -111,7 +113,8 @@ const STEPS = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const subjects = await getActiveSubjects(await createClient());
   return (
     <div className="overflow-hidden">
       {/* Hero: staggered copy on the left and classroom photo on the right */}
@@ -145,7 +148,7 @@ export default function HomePage() {
       </section>
 
       {/* Subjects: one consistent illustration set, one tab per subject */}
-      <SubjectExplorer />
+      <SubjectExplorer subjects={subjects} />
 
       {/* Real-world message */}
       <section id="real-world" className={cn("border-y", BORDER_COLOR)}>

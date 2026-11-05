@@ -15,6 +15,15 @@ export async function getActiveSubjects(client: DbClient) {
   return data ?? [];
 }
 
+export async function getAllSubjects(client: DbClient) {
+  const { data } = await client
+    .from("subjects")
+    .select("id, name, slug, is_active")
+    .order("is_active", { ascending: false })
+    .order("name");
+  return data ?? [];
+}
+
 export async function getRecentNotifications(client: DbClient, profileId: string, limit = 8) {
   const { data } = await client
     .from("notifications")
