@@ -26,24 +26,6 @@
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 25%, black 20%, transparent 75%);
 }
 
-/* Homepage sections are continuously linked to scroll position. The shared
-   public header is outside this wrapper and is intentionally unaffected. */
-.homepage-scroll-content > *:not(.hero-scroll-scene) {
-  --section-progress: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background-color: rgb(250 250 250);
-  opacity: 1;
-  transform: none;
-  transform-origin: center center;
-  will-change: opacity, transform;
-}
-
 /* The hero image travels through the whole homepage: it rolls down from the
    hero, settles on the left, then crosses to the right as page progress grows. */
 .homepage-travel-image {
@@ -68,24 +50,6 @@
   transform-origin: center;
   transition: opacity 300ms ease-out;
   will-change: transform, opacity;
-}
-
-.homepage-scroll-content.is-scroll-ready > *:not(.hero-scroll-scene) {
-  opacity: calc(0.2 + (var(--section-progress) * 0.8));
-  transform:
-    translate3d(calc((1 - var(--section-progress)) * -7rem), 0, calc(var(--section-progress) * 2rem))
-    rotateY(calc((1 - var(--section-progress)) * 10deg));
-  transition: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .homepage-scroll-content > *:not(.hero-scroll-scene) {
-    background-color: rgb(9 9 11);
-  }
-
-  .homepage-travel-image {
-    display: none;
-  }
 }
 
 /* Scroll-linked 3D landing scene. The progress value is supplied by the
@@ -434,14 +398,5 @@
     scroll-behavior: auto !important;
   }
 
-  .homepage-scroll-content > * {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
 
-  .homepage-scroll-content > *:not(.hero-scroll-scene) {
-    position: relative;
-    min-height: auto;
-  }
 }
