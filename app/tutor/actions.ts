@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireRoleClient } from "@/lib/auth/session";
 import type { DbClient } from "@/lib/supabase/types";
+import type { AppointmentActionState } from "@/lib/appointments/types";
 import { appTimeToDate } from "@/lib/utils/datetime";
+import { friendlyDatabaseMessage } from "@/lib/utils/db-errors";
 import { parseUuid } from "@/lib/validations/common";
 import {
   CREDENTIAL_FILE_TYPES,
@@ -11,7 +13,7 @@ import {
   parseApplicationForm,
   type ApplicationInput,
 } from "@/lib/validations/application";
-import { availabilitySchema, profileSchema } from "@/lib/validations/tutor";
+import { availabilitySchema, noteSchema, profileSchema } from "@/lib/validations/tutor";
 
 export type TutorFormState = {
   error?: string;
@@ -191,15 +193,19 @@ export async function createAvailability(
     startTime: formData.get("startTime"),
     endTime: formData.get("endTime"),
     duration: formData.get("duration"),
+    sessionMode: formData.get("sessionMode"),
+    meetingUrl: formData.get("meetingUrl"),
+    location: formData.get("location"),
     subjectId: formData.get("subjectId"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const { dayDate, startTime, endTime, duration, subjectId } = parsed.data;
+  const { dayDate, startTime, endTime, duration, sessionMode, meetingUrl, location, subjectId } = parsed.data;
   if (appTimeToDate(dayDate, startTime) <= new Date()) {
     return { error: "Choose a future date and time." };
   }
 
+  // Only the detail that matches the session type is stored.
   const { error } = await supabase.from("availability").insert({
     tutor_profile_id: tutorProfileId,
     subject_id: subjectId ?? null,
@@ -207,29 +213,104 @@ export async function createAvailability(
     start_time: startTime,
     end_time: endTime,
     slot_duration_minutes: duration,
+    session_mode: sessionMode,
+    meeting_url: sessionMode === "online" ? (meetingUrl ?? null) : null,
+    location: sessionMode === "in_person" ? (location ?? null) : null,
   });
   if (error) {
-    return { error: "Unable to create availability. Check that the time window does not overlap another one." };
+    // 23P01 = exclusion violation: this window overlaps another one of the tutor's windows.
+    if (error.code === "23P01") return { error: "This time overlaps another availability window of yours." };
+    return { error: friendlyDatabaseMessage(error, "Unable to create availability. Please try again.") };
   }
 
   revalidatePath("/tutor/dashboard");
+  revalidatePath("/tutors", "layout");
+  revalidatePath("/student/tutors", "layout");
   return { success: "Availability added and appointment slots generated." };
 }
 
-export async function deleteAvailability(formData: FormData) {
+export async function deleteAvailability(
+  _previous: AppointmentActionState,
+  formData: FormData,
+): Promise<AppointmentActionState> {
   const { profile, supabase } = await requireRoleClient("tutor");
 
   const availabilityId = parseUuid(formData, "availabilityId");
   const tutorProfileId = await getTutorProfileId(supabase, profile.id);
-  if (!availabilityId || !tutorProfileId) return;
+  if (!availabilityId || !tutorProfileId) return { error: "This availability window could not be found." };
 
-  await supabase
+  const { error } = await supabase
     .from("availability")
     .delete()
     .eq("id", availabilityId)
     .eq("tutor_profile_id", tutorProfileId);
+  if (error) return { error: friendlyDatabaseMessage(error, "Unable to remove this availability window.") };
 
   revalidatePath("/tutor/dashboard");
+  revalidatePath("/tutors", "layout");
+  revalidatePath("/student/tutors", "layout");
+  return null;
+}
+
+/* ---------------------------------------------------------------------------
+ * Appointments: confirm, complete, no-show, cancel
+ * Each one calls a SQL function that checks the caller owns the appointment
+ * and that the move is allowed right now (see migration 0008).
+ * ------------------------------------------------------------------------- */
+
+type RpcResult = { error: { code: string; message: string } | null };
+
+async function finishAppointmentAction(result: RpcResult, failure: string): Promise<AppointmentActionState> {
+  if (result.error) return { error: friendlyDatabaseMessage(result.error, failure) };
+  revalidatePath("/tutor/dashboard");
+  return null;
+}
+
+export async function confirmAppointment(_previous: AppointmentActionState, formData: FormData): Promise<AppointmentActionState> {
+  const { supabase } = await requireRoleClient("tutor");
+  const appointmentId = parseUuid(formData, "appointmentId");
+  if (!appointmentId) return { error: "This session could not be found." };
+  return finishAppointmentAction(
+    await supabase.rpc("confirm_appointment", { p_appointment_id: appointmentId }),
+    "We couldn't confirm this session. Please try again.",
+  );
+}
+
+export async function completeAppointment(_previous: AppointmentActionState, formData: FormData): Promise<AppointmentActionState> {
+  const { supabase } = await requireRoleClient("tutor");
+  const appointmentId = parseUuid(formData, "appointmentId");
+  if (!appointmentId) return { error: "This session could not be found." };
+  return finishAppointmentAction(
+    await supabase.rpc("complete_appointment", { p_appointment_id: appointmentId }),
+    "We couldn't mark this session as completed. Please try again.",
+  );
+}
+
+export async function markNoShow(_previous: AppointmentActionState, formData: FormData): Promise<AppointmentActionState> {
+  const { supabase } = await requireRoleClient("tutor");
+  const appointmentId = parseUuid(formData, "appointmentId");
+  if (!appointmentId) return { error: "This session could not be found." };
+  return finishAppointmentAction(
+    await supabase.rpc("mark_appointment_no_show", { p_appointment_id: appointmentId }),
+    "We couldn't update this session. Please try again.",
+  );
+}
+
+export async function cancelAppointmentAsTutor(
+  _previous: AppointmentActionState,
+  formData: FormData,
+): Promise<AppointmentActionState> {
+  const { supabase } = await requireRoleClient("tutor");
+  const appointmentId = parseUuid(formData, "appointmentId");
+  if (!appointmentId) return { error: "This session could not be found." };
+
+  const reason = noteSchema.safeParse(formData.get("reason"));
+  if (!reason.success) return { error: "The reason must be 500 characters or fewer." };
+
+  return finishAppointmentAction(
+    await supabase.rpc("cancel_appointment", { p_appointment_id: appointmentId, p_reason: reason.data ?? null }),
+    "We couldn't cancel this session. Please try again.",
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -255,6 +336,7 @@ export async function updateTutorProfile(
   if (error) return { error: "Unable to update your public profile." };
 
   revalidatePath("/tutor/dashboard");
-  revalidatePath("/tutors");
+  revalidatePath("/tutors", "layout");
+  revalidatePath("/student/tutors", "layout");
   return { success: "Your public profile was updated." };
 }

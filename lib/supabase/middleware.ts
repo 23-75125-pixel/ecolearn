@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database.types";
 import { getSupabaseEnv } from "@/lib/supabase/env";
@@ -55,5 +56,10 @@ export async function updateSession(request: NextRequest) {
     error,
   } = await supabase.auth.getUser();
 
-  return { response, supabase, user: user ?? null, authError: error ?? null };
+  // "No session" (a guest) and "invalid or expired token" are normal answers, not
+  // failures. Only an unreachable or failing auth service means we cannot tell who
+  // the visitor is, and only that is reported as authError.
+  const serviceUnavailable = error && (isAuthRetryableFetchError(error) || (error.status ?? 0) >= 500);
+
+  return { response, supabase, user: user ?? null, authError: serviceUnavailable ? error : null };
 }

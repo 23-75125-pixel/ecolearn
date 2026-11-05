@@ -54,7 +54,7 @@ you're extending this project. This README covers day-to-day setup.
 
    Against a hosted Supabase project, either `supabase link` then
    `supabase db push`, or paste the contents of
-   each file in `supabase/migrations/` (`0001` to `0006`, in that order)
+   each file in `supabase/migrations/` (`0001` to `0010`, in that order)
    into the SQL Editor. Run `supabase/seed/seed.sql` the same way if you
    want demo data - **local/dev projects only** (see the warning at the
    top of that file).
@@ -124,16 +124,10 @@ All demo accounts share the password `Passw0rd!`.
 |---|---|---|
 | `admin@ecolearn.test` | Admin | |
 | `student1@ecolearn.test` | Student | Has one upcoming appointment |
-| `tutor.approved@ecolearn.test` | Tutor | Approved; has availability + a booking |
+| `tutor.approved@ecolearn.test` | Tutor | Approved; has an online and an in-person availability window, and a booking |
 | `tutor.pending@ecolearn.test` | Tutor | Application pending review |
 | `tutor.revision@ecolearn.test` | Tutor | Application needs revision |
 | `tutor.rejected@ecolearn.test` | Tutor | Application rejected |
-
-## A note on dependencies
-
-This delivery does **not** include `node_modules` - only `package.json` was
-updated (added `@supabase/ssr`, `@supabase/supabase-js`, `zod`, `clsx`).
-Run `npm install` after extracting before `npm run dev`.
 
 ## Regenerating types after schema changes
 
@@ -155,6 +149,105 @@ npm run db:types
 - Booking and cancellation only ever happen through the
   `book_appointment_slot()` / `cancel_appointment()` Postgres functions -
   never a direct table insert/update from the client.
+
+## Who can see what
+
+| Visitor | Can open | Is sent away from |
+|---|---|---|
+| Guest (not signed in) | Landing page with its footer, About, the tutor directory and tutor profiles, Login, Register, Forgot password, Terms, Privacy | `/student/**`, `/tutor/**`, `/admin/**` (sent to Login) |
+| Student | `/student/**` only (dashboard, tutor directory at `/student/tutors`) | The landing page, About, Login, Register, `/tutors` (sent to the student section), the tutor and admin sections |
+| Tutor | `/tutor/**` only | Everything else |
+| Admin | `/admin/**` only | Everything else |
+
+Terms and Privacy stay readable for everyone, because sign-up links to them.
+The rules live in one function, `lib/auth/access.ts`, which `proxy.ts` applies to
+every request. Every section layout, Server Action, SQL function and RLS policy
+checks the role again, so the proxy is a convenience and never the only guard.
+
+## How a tutoring session works
+
+1. **The tutor publishes a window**: a date, a time range, a session length
+   (30 to 120 minutes) and **how the session is held**:
+   - *Online*: a meeting link (Google Meet, Zoom, Teams, any `https://` link). The tutor teaches on that link.
+   - *In person*: a meeting place.
+
+   The window becomes bookable slots. The meeting link is stored on the
+   tutor-only `availability` table, never on the public slots.
+2. **The student books a slot** (with an optional note). The booking is created
+   by `book_appointment_slot()`, which locks the slot, so two students can never
+   take the same one. Status: *Awaiting confirmation*. The link or place is copied
+   onto the appointment.
+3. **The tutor confirms** (or cancels with a reason). Only then does the student's
+   dashboard show **Join session** (online) or the place (in person).
+4. **After the start time** the tutor marks the session **completed**, or **a
+   no-show** after waiting 15 minutes.
+5. **Cancelling**: a student up to 2 hours before the start (the slot reopens);
+   a tutor any time before the start, with a reason the student sees (the slot
+   stays closed). Nobody can cancel a session that already started.
+
+A request the tutor never confirmed is shown as "Not confirmed in time" once its
+time has passed. The system does not chat or host calls itself: it hands both
+people the same meeting link or place.
+
+## Tests
+
+```bash
+npm test             # unit tests (Vitest): validation, access rules, appointment rules
+npm run typecheck    # TypeScript
+npm run lint         # ESLint
+npm run test:db      # database tests (needs DATABASE_URL, see below)
+npm run test:e2e     # browser tests (Selenium, see below)
+```
+
+**Database tests** (`supabase/tests/session_flow.test.sql`) check booking,
+confirmation, cancellation rules and who can read what, inside one transaction
+that is rolled back. Run them on a local database that has all migrations and
+the seed:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm run test:db
+```
+
+**Browser tests** (`selenium_tests/`) drive a real browser through the site and
+use accounts already stored in the target database. They need Python 3.9+ and
+Chrome or Chromium:
+
+```bash
+pip install -r selenium_tests/requirements.txt
+npm run build && npm run start        # in another terminal
+E2E_PASSWORD='your-test-password' \
+E2E_ADMIN_EMAIL='admin@example.com' E2E_ADMIN_NAME='Admin User' \
+E2E_STUDENT_EMAIL='student@example.com' E2E_STUDENT_NAME='Student User' \
+E2E_TUTOR_EMAIL='tutor@example.com' E2E_TUTOR_NAME='Approved Tutor' \
+npm run test:e2e
+```
+
+The suite does not use or require the demo accounts from
+`supabase/seed/seed.sql`. It signs in with the supplied accounts and creates
+test accounts, availability windows and bookings in the target database. Use a
+test project or test accounts rather than production accounts because the
+tests change database state. Each role may use a different password with
+`E2E_<ROLE>_PASSWORD`; otherwise all roles use `E2E_PASSWORD`. Scenarios requiring a second student or separate pending/revision tutor
+accounts are skipped because this suite is configured for these three accounts
+only.
+
+Other options are `BASE_URL`, `HEADED=1`, `CHROMIUM_BINARY`,
+`CHROMEDRIVER_BINARY`, and `EMAIL_CONFIRMATION_REQUIRED=1` when the project
+requires email confirmation (then tests that create a brand-new signed-in user
+are skipped).
+
+The same variables are listed as safe placeholders in `.env.example`. For CI,
+configure them as repository or environment secrets; never commit passwords,
+Supabase service-role keys, or real account data. Set the repository variable
+`E2E_ENABLED` to `1` only after all E2E secrets are configured. `E2E_ADMIN_EMAIL` must
+identify a dedicated test account with the `admin` profile role. Do not use a
+personal or production account for browser tests.
+
+For local development, copy `.env.e2e.example` to `.env.e2e.local`, replace
+the three account emails, names, and test password, then run
+`npm run test:e2e`. The runner loads `.env.e2e.local` automatically without
+displaying its values. You can use a different file with
+`E2E_ENV_FILE=/path/to/file npm run test:e2e`.
 
 ## Development commands
 

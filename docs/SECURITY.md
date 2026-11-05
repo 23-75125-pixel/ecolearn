@@ -52,3 +52,20 @@ Each item was reproduced with a test user against `0002` before the fix.
 - Rate limiting on sign-in beyond Supabase Auth's built-in limits.
 - Turn on "Confirm email" and a minimum password length in the Supabase dashboard.
 - Never run `supabase/seed/seed.sql` on a real project: it creates users with a shared password.
+
+## Session logic (migration `0008`)
+
+- The meeting link is stored on `availability`, which only the tutor and admins can
+  read. Students receive it only inside their own appointment, and the screen
+  shows it only after the tutor confirms. Public pages never contain it
+  (`test_the_meeting_link_is_never_shown_on_the_public_profile`).
+- Links must start with `https://` and contain no spaces (database check
+  constraint and Zod), so a `javascript:` or `http:` link is refused.
+- The new functions (`confirm_appointment`, `complete_appointment`,
+  `mark_appointment_no_show`, `cancel_appointment`) are `security definer`, check
+  the caller owns the appointment (or is an admin), and are not executable by
+  `anon`.
+- Database error text is shown to users only for deliberate business-rule errors
+  (`raise exception`, code `P0001`); anything else becomes a generic message.
+- A guest is not an error: only an unreachable auth service returns 503 for a
+  role section.

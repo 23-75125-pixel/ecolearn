@@ -10,7 +10,7 @@ const PERSONAS = [
     label: "Students",
     tagline: "Learn with a guide who gets you.",
     body: "Compare real availability and book a session in minutes.",
-    tags: ["Verified tutors", "Live availability", "One-click booking", "Session history", "Cancel anytime"],
+    tags: ["Verified tutors", "Live availability", "One-click booking", "Session history", "Cancel up to 2 hours before"],
   },
   {
     id: "parents",
