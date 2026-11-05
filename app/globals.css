@@ -84,7 +84,7 @@
 
 .hero-scroll-copy {
   position: relative;
-  z-index: 2;
+  z-index: 1;
   transform:
     translate3d(calc(var(--hero-progress) * 42vw), 0, calc(var(--hero-progress) * 3rem))
     rotateY(calc(var(--hero-progress) * -8deg));
@@ -107,6 +107,7 @@
 }
 
 .hero-scroll-stage {
+  z-index: 3;
   min-height: 24rem;
   position: relative;
   display: grid;
