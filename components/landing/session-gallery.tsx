@@ -5,22 +5,46 @@ import { cn } from "@/lib/utils/cn";
 
 const MOMENTS = [
   {
-    src: "/landing/session-review.webp",
-    alt: "A teacher reviewing a student's written work at a desk",
-    caption: "Reviewing your work together",
-    note: "Feedback on the exact answers you wrote.",
+    src: "/carousel/filipino-classroom-1.png",
+    alt: "A Filipino classroom learning session",
+    caption: "Learning together",
+    note: "A supportive classroom built around every learner.",
   },
   {
-    src: "/landing/session-board.webp",
-    alt: "A teacher explaining a problem on the blackboard",
+    src: "/carousel/filipino-classroom-2.png",
+    alt: "A tutor explaining a lesson to students",
     caption: "Explaining it step by step",
     note: "Hard topics broken into small, clear steps.",
   },
   {
-    src: "/landing/session-visual.webp",
-    alt: "A teacher using a visual aid to explain an idea to a student",
+    src: "/carousel/filipino-classroom-3.png",
+    alt: "Students participating in a classroom discussion",
     caption: "Making ideas easy to see",
     note: "Examples and visuals that make it click.",
+  },
+  {
+    src: "/carousel/filipino-classroom-4.png",
+    alt: "Students working together during a learning activity",
+    caption: "Practising with confidence",
+    note: "Guided practice that turns questions into progress.",
+  },
+  {
+    src: "/carousel/filipino-classroom-5.png",
+    alt: "A teacher supporting students during classwork",
+    caption: "Support when it matters",
+    note: "Patient guidance for the work in front of you.",
+  },
+  {
+    src: "/carousel/filipino-classroom-6.png",
+    alt: "Students learning together in a Filipino classroom",
+    caption: "Growing as a group",
+    note: "Learn with peers who are moving forward too.",
+  },
+  {
+    src: "/carousel/filipino-classroom-7.png",
+    alt: "A teacher leading an engaging classroom lesson",
+    caption: "Keeping learning engaging",
+    note: "Clear lessons that keep curiosity moving.",
   },
 ];
 
