@@ -44,6 +44,32 @@
   will-change: opacity, transform;
 }
 
+/* The hero image travels through the whole homepage: it rolls down from the
+   hero, settles on the left, then crosses to the right as page progress grows. */
+.homepage-travel-image {
+  --travel-x: 0vw;
+  --travel-y: 8vh;
+  --travel-rotation: 0deg;
+  position: fixed;
+  z-index: 20;
+  top: 0;
+  left: 50%;
+  width: clamp(7rem, 17vw, 15rem);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 2px solid rgb(255 255 255 / 0.7);
+  border-radius: 1rem;
+  box-shadow: 0 1.5rem 3rem rgb(24 24 27 / 0.28);
+  pointer-events: none;
+  opacity: clamp(0, calc((var(--homepage-progress, 0) - 0.08) * 8), 0.9);
+  transform:
+    translate3d(var(--travel-x), var(--travel-y), 0)
+    rotate(var(--travel-rotation));
+  transform-origin: center;
+  transition: opacity 300ms ease-out;
+  will-change: transform, opacity;
+}
+
 .homepage-scroll-content.is-scroll-ready > *:not(.hero-scroll-scene) {
   opacity: calc(0.2 + (var(--section-progress) * 0.8));
   transform:
@@ -55,6 +81,10 @@
 @media (prefers-color-scheme: dark) {
   .homepage-scroll-content > *:not(.hero-scroll-scene) {
     background-color: rgb(9 9 11);
+  }
+
+  .homepage-travel-image {
+    display: none;
   }
 }
 
