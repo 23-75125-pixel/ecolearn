@@ -114,7 +114,7 @@ const STEPS = [
 export default function HomePage() {
   return (
     <div className="overflow-hidden">
-      {/* Hero: staggered copy on the left, photo and interactive booking preview on the right */}
+      {/* Hero: staggered copy on the left and classroom photo on the right */}
       <section className="relative">
         <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-16 px-4 pb-14 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-16 lg:pt-24">
