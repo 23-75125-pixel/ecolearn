@@ -114,7 +114,7 @@ const STEPS = [
 export default async function HomePage() {
   const subjects = await getActiveSubjects(await createClient());
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-x-clip">
       <HomeScrollReveal>
         <HeroScrollScene />
 
