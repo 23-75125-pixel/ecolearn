@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
+import heroImage from "@/app/image.jpeg";
 import { BORDER, ICON } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 
@@ -11,7 +12,7 @@ export function HeroVisual() {
     <div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-none">
       <div className={cn("animate-fade-up relative aspect-[4/3] overflow-hidden rounded-md [animation-delay:250ms]", BORDER)}>
         <Image
-          src="/image.jpeg"
+          src={heroImage}
           alt="A tutor guiding a young student through written work"
           fill
           priority
