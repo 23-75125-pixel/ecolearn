@@ -85,6 +85,11 @@
 .hero-scroll-copy {
   position: relative;
   z-index: 2;
+  transform:
+    translate3d(calc(var(--hero-progress) * 42vw), 0, calc(var(--hero-progress) * 3rem))
+    rotateY(calc(var(--hero-progress) * -8deg));
+  transform-origin: left center;
+  will-change: transform;
 }
 
 .hero-scroll-eyebrow {
@@ -107,6 +112,11 @@
   display: grid;
   place-items: center;
   transform-style: preserve-3d;
+  transform:
+    translate3d(calc(var(--hero-progress) * -42vw), 0, calc(var(--hero-progress) * 5rem))
+    rotateY(calc(var(--hero-progress) * 8deg));
+  transform-origin: right center;
+  will-change: transform;
 }
 
 .hero-scroll-frame {
@@ -282,6 +292,11 @@
 
   .hero-scroll-content {
     padding-block: 4rem 5rem;
+  }
+
+  .hero-scroll-copy,
+  .hero-scroll-stage {
+    transform: none;
   }
 
   .hero-scroll-stage {
