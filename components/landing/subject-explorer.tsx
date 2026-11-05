@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useRef, useState, type KeyboardEvent } from "react";
 import { ArrowRight, BookOpen, Code2, FlaskConical, Sigma, type LucideIcon } from "lucide-react";
-import { SubjectArt, type SubjectId } from "@/components/landing/subject-art";
+import { SubjectArt } from "@/components/landing/subject-art";
 import { buttonClasses } from "@/components/ui/button";
 import { BORDER, BORDER_COLOR, ICON, INTERACTIVE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 
 type Subject = {
-  id: SubjectId;
-  /** Must match the subject name in the database so the directory filter finds it. */
+  id: string;
+  artId: string;
   name: string;
   icon: LucideIcon;
   summary: string;
@@ -18,50 +18,67 @@ type Subject = {
   topics: string[];
 };
 
-const SUBJECTS: Subject[] = [
-  {
-    id: "mathematics",
-    name: "Mathematics",
+const SUBJECT_DETAILS: Record<string, Omit<Subject, "id" | "name" | "artId">> = {
+  mathematics: {
     icon: Sigma,
     summary: "Algebra, geometry and exam prep",
     body: "Work through problems step by step with a tutor who shows you where the method matters, not only the answer.",
     topics: ["Algebra", "Geometry", "Trigonometry", "Statistics", "Exam preparation"],
   },
-  {
-    id: "science",
-    name: "Science",
+  science: {
     icon: FlaskConical,
     summary: "Biology, chemistry and physics",
     body: "Understand the idea behind the formula, then practise it with experiments, lab reports and past questions.",
     topics: ["Biology", "Chemistry", "Physics", "Lab reports", "Study groups"],
   },
-  {
-    id: "english",
-    name: "English",
+  english: {
     icon: BookOpen,
     summary: "Reading, writing and speaking",
     body: "Build clear writing and confident speaking, with feedback on the essays and presentations you are working on now.",
     topics: ["Reading comprehension", "Essay writing", "Grammar", "Speaking practice", "Exam preparation"],
   },
-  {
-    id: "programming",
-    name: "Computer Programming",
+  "computer-programming": {
     icon: Code2,
     summary: "Python, web and problem solving",
     body: "Learn by building small projects, with someone who reviews your code and helps you debug it.",
     topics: ["Python", "Web development", "Problem solving", "Debugging", "Project review"],
   },
-];
+};
 
-export function SubjectExplorer() {
-  const [activeId, setActiveId] = useState<SubjectId>(SUBJECTS[0].id);
+function subjectSlug(name: string) {
+  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function buildSubject(subject: { id: string; name: string }): Subject {
+  const artId = subjectSlug(subject.name);
+  const details = SUBJECT_DETAILS[artId] ?? {
+    icon: BookOpen,
+    summary: `Personalized help with ${subject.name}`,
+    body: `Find a verified tutor to help you understand ${subject.name} and make steady progress.`,
+    topics: [subject.name, "Study support", "Exam preparation"],
+  };
+  return { ...details, artId, id: subject.id, name: subject.name };
+}
+
+export function SubjectExplorer({ subjects }: { subjects: { id: string; name: string }[] }) {
+  const subjectItems = subjects.map(buildSubject);
+  const [activeId, setActiveId] = useState(subjectItems[0]?.id ?? "");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const activeIndex = SUBJECTS.findIndex((subject) => subject.id === activeId);
-  const active = SUBJECTS[activeIndex];
+  const activeIndex = subjectItems.findIndex((subject) => subject.id === activeId);
+  const active = subjectItems[activeIndex] ?? subjectItems[0];
+
+  if (!active) {
+    return (
+      <section id="subjects" className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6 sm:py-24">
+        <h2 className={SECTION}>Subjects are coming soon.</h2>
+        <p className={cn(SUBTEXT, "mt-3")}>Our administrators are preparing the subject catalog.</p>
+      </section>
+    );
+  }
 
   function select(index: number) {
-    const next = (index + SUBJECTS.length) % SUBJECTS.length;
-    setActiveId(SUBJECTS[next].id);
+    const next = (index + subjectItems.length) % subjectItems.length;
+    setActiveId(subjectItems[next].id);
     tabRefs.current[next]?.focus();
   }
 
@@ -77,7 +94,7 @@ export function SubjectExplorer() {
       select(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      select(SUBJECTS.length - 1);
+      select(subjectItems.length - 1);
     }
   }
 
@@ -97,7 +114,7 @@ export function SubjectExplorer() {
           onKeyDown={onKeyDown}
           className={cn("grid grid-cols-2 border-b lg:grid-cols-1 lg:border-b-0 lg:border-r", BORDER_COLOR)}
         >
-          {SUBJECTS.map((subject, index) => {
+          {subjectItems.map((subject, index) => {
             const Icon = subject.icon;
             const isActive = subject.id === activeId;
             return (
@@ -144,7 +161,7 @@ export function SubjectExplorer() {
           className="animate-fade-up grid items-center gap-8 p-6 sm:p-8 md:grid-cols-[1.05fr_1fr]"
         >
           <div className={cn("aspect-[3/2] w-full overflow-hidden rounded-md", BORDER, SURFACE)}>
-            <SubjectArt id={active.id} />
+            <SubjectArt id={active.artId} />
           </div>
           <div>
             <h3 className="text-lg font-medium tracking-tight">{active.name}</h3>

@@ -20,7 +20,7 @@ export async function getTutorApplication(client: DbClient, tutorId: string) {
 export async function getTutorProfile(client: DbClient, profileId: string) {
   const { data } = await client
     .from("tutor_profiles")
-    .select("id, headline, bio")
+    .select("id, headline, bio, tutor_subjects(subject_id)")
     .eq("profile_id", profileId)
     .maybeSingle();
   return data;

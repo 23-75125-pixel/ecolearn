@@ -7,19 +7,27 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { METRIC_LABELS } from "@/lib/constants/admin-metrics";
 import { APPLICATION_STATUS_LABEL, APPLICATION_STATUS_TONE } from "@/lib/constants/status";
 import { loadAdminStats, loadReviewQueue } from "@/lib/queries/admin";
+import { getAllSubjects } from "@/lib/queries/shared";
 import { createClient } from "@/lib/supabase/server";
 import { DIVIDE, EMPTY_STATE, ICON, ICON_INLINE, INTERACTIVE, ITEM_TITLE, SUBTEXT, TITLE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
 import { unwrapRelation } from "@/lib/utils/relations";
+import { SubjectManager } from "@/components/admin/subject-manager";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
-  const [stats, { queue, failed }] = await Promise.all([loadAdminStats(supabase), loadReviewQueue(supabase)]);
+  const [stats, { queue, failed }, subjects] = await Promise.all([
+    loadAdminStats(supabase),
+    loadReviewQueue(supabase),
+    getAllSubjects(supabase),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <h1 className={TITLE}>Admin dashboard</h1>
+
+      <SubjectManager subjects={subjects} />
 
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {stats.map((stat) => (

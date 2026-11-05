@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 
-export type SubjectId = "mathematics" | "science" | "english" | "programming";
-
 /**
  * One illustration per subject, drawn on the same 480x320 canvas with the same
  * line weight, the same zinc outlines and the single brand-green accent, so the
@@ -144,7 +142,7 @@ function Programming() {
   );
 }
 
-export function SubjectArt({ id }: { id: SubjectId }) {
+export function SubjectArt({ id }: { id: string }) {
   switch (id) {
     case "mathematics":
       return <Mathematics />;
@@ -153,6 +151,9 @@ export function SubjectArt({ id }: { id: SubjectId }) {
     case "english":
       return <English />;
     case "programming":
+    case "computer-programming":
       return <Programming />;
+    default:
+      return <English />;
   }
 }
