@@ -26,6 +26,27 @@
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 25%, black 20%, transparent 75%);
 }
 
+/* Homepage sections enter from the left; the shared public header is outside
+   this wrapper and is intentionally unaffected. */
+.homepage-scroll-content > * {
+  opacity: 0;
+  transform: translate3d(-5rem, 0, 0);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.homepage-scroll-content > .is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.homepage-scroll-content > .hero-scroll-scene {
+  opacity: 1;
+  transform: none;
+}
+
 /* Scroll-linked 3D landing scene. The progress value is supplied by the
    client component so the rest of the homepage remains server-rendered. */
 .hero-scroll-scene {
@@ -370,5 +391,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .homepage-scroll-content > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
