@@ -34,6 +34,7 @@ yarn-error.log*
 .env*
 # ...but the example template must ship with the repo (README references it)
 !.env.example
+!.env.e2e.example
 
 # Supabase CLI local state
 /supabase/.temp/

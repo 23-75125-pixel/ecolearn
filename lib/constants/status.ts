@@ -32,7 +32,7 @@ export const APPLICATION_STATUS_MESSAGE: Record<ApplicationStatus, string> = {
 };
 
 export const APPOINTMENT_STATUS_LABEL: Record<AppointmentStatus, string> = {
-  scheduled: "Scheduled",
+  scheduled: "Awaiting confirmation",
   confirmed: "Confirmed",
   completed: "Completed",
   cancelled: "Cancelled",
@@ -56,12 +56,12 @@ export const ACTIVE_APPOINTMENT_STATUSES: AppointmentStatus[] = [
   "confirmed",
 ];
 
-/** Application statuses that still need (or can receive) an admin decision. */
-export const REVIEWABLE_APPLICATION_STATUSES: ApplicationStatus[] = [
-  "pending",
-  "under_review",
-  "needs_revision",
-];
+/**
+ * Application statuses an admin can decide on. An application that needs
+ * revision is waiting for the TUTOR, so it is not reviewable until it is
+ * resubmitted (the database enforces this too).
+ */
+export const REVIEWABLE_APPLICATION_STATUSES: ApplicationStatus[] = ["pending", "under_review"];
 
 /** Application statuses a tutor may still edit and resubmit. */
 export const EDITABLE_APPLICATION_STATUSES: ApplicationStatus[] = [

@@ -33,7 +33,16 @@ function toListItem(tutor: Tutor) {
   return { tutor, fullName, subjectNames };
 }
 
-export function TutorDirectory({ tutors, initialSubject }: { tutors: Tutor[]; initialSubject?: string }) {
+export function TutorDirectory({
+  tutors,
+  basePath,
+  initialSubject,
+}: {
+  tutors: Tutor[];
+  /** Where a tutor card links to: "/tutors" for guests, "/student/tutors" for students. */
+  basePath: string;
+  initialSubject?: string;
+}) {
   const [query, setQuery] = useState("");
   const items = useMemo(() => tutors.map(toListItem), [tutors]);
   const [subject, setSubject] = useState(() =>
@@ -84,7 +93,7 @@ export function TutorDirectory({ tutors, initialSubject }: { tutors: Tutor[]; in
       ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleItems.map(({ tutor, fullName, subjectNames }) => (
-            <Link key={tutor.id} href={`/tutors/${tutor.id}`} className={cn("block rounded-md", INTERACTIVE)}>
+            <Link key={tutor.id} href={`${basePath}/${tutor.id}`} className={cn("block rounded-md", INTERACTIVE)}>
               <Card className="h-full">
                 <div className="flex items-center gap-3">
                   <ProfileAvatar

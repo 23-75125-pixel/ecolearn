@@ -16,6 +16,10 @@ export function parseUuidList(formData: FormData, key: string): string[] {
     .flatMap((result) => (result.success ? [result.data] : []));
 }
 
-/** Empty form fields arrive as "" — treat them as "not provided". */
+/**
+ * A missing field (`formData.get()` gives null) and an empty field ("") both
+ * mean "not provided". Treating null as a real value was why booking a session
+ * without notes failed with a notes-length error.
+ */
 export const emptyToUndefined = (value: unknown) =>
-  typeof value === "string" && value.trim() === "" ? undefined : value;
+  value == null || (typeof value === "string" && value.trim() === "") ? undefined : value;

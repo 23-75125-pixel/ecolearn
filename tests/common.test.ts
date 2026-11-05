@@ -55,9 +55,12 @@ describe("emptyToUndefined", () => {
     expect(emptyToUndefined("hello")).toBe("hello");
   });
 
-  it("returns non-string values as-is", () => {
-    expect(emptyToUndefined(null)).toBeNull();
+  it("treats a missing field (null) like an empty one", () => {
+    expect(emptyToUndefined(null)).toBeUndefined();
     expect(emptyToUndefined(undefined)).toBeUndefined();
+  });
+
+  it("returns other values as-is", () => {
     expect(emptyToUndefined(42)).toBe(42);
   });
 });

@@ -1,5 +1,21 @@
 # ECoLearn — Architecture
 
+
+E2E_ADMIN_EMAIL=... \
+E2E_ADMIN_NAME=... \
+E2E_STUDENT_EMAIL=... \
+E2E_STUDENT_NAME=... \
+E2E_STUDENT2_EMAIL=... \
+E2E_STUDENT2_NAME=... \
+E2E_TUTOR_EMAIL=... \
+E2E_TUTOR_NAME=... \
+E2E_TUTOR_PENDING_EMAIL=... \
+E2E_TUTOR_PENDING_NAME=... \
+E2E_TUTOR_REVISION_EMAIL=... \
+E2E_TUTOR_REVISION_NAME=... \
+E2E_PASSWORD=... \
+npm run test:e2e
+
 This document is the Phase 2 deliverable (architecture, schema, RLS
 strategy) called for by the master prompt, kept in the repo instead of only
 in chat so it stays current as the project grows. Read this before making
@@ -196,3 +212,59 @@ public-read, owner-write, same path scoping.
 
 See the root `README.md` for environment variables, running migrations,
 and demo account credentials.
+
+---
+
+## 8. Access model (who may open what)
+
+`lib/auth/access.ts` is the only place that decides it, and `proxy.ts` applies it
+to every request. It is a pure function, so `tests/access.test.ts` covers every
+role and path.
+
+- **Guests** see the landing page and its footer, About, the tutor directory and
+  profiles (read only), and the sign-in pages.
+- **Signed-in users** only ever see their own section (`/student`, `/tutor`,
+  `/admin`). The landing page, its footer and the sign-in pages redirect them to
+  their dashboard. A student browses tutors at `/student/tutors`, which shares the
+  directory and profile components with the public pages.
+- **Terms and Privacy** (`app/(legal)`) are open to everyone and have no landing
+  footer. `/complete-signup` needs a signed-in user.
+- If the auth service cannot be reached, a role section answers 503 instead of
+  guessing; a missing session is just a guest.
+
+Defence in depth: every role section re-checks in its layout (`RoleShell` ->
+`requireRole`), every Server Action calls `requireRoleClient`, and Postgres
+enforces the same rules with RLS and function checks.
+
+## 9. Session logic (migration `0008`)
+
+How the two people meet is part of the data, not an afterthought:
+
+| Where | What |
+|---|---|
+| `availability.session_mode`, `meeting_url`, `location` | Set by the tutor per window. Online needs an `https://` link, in person needs a place. Readable by the tutor and admins only. |
+| `appointment_slots.session_mode` | Public: a student sees "Online" or "In person" before booking, never the link. |
+| `appointments.session_mode`, `meeting_url`, `location` | Snapshot copied at booking, visible to the student, the tutor and admins. A later change to the window cannot break a booking. |
+
+Appointment lifecycle, each step a SQL function that checks who is calling:
+
+```
+book_appointment_slot()  -> scheduled   ("Awaiting confirmation")
+confirm_appointment()    -> confirmed   (tutor; the student now sees how to join)
+complete_appointment()   -> completed   (tutor, after the start time)
+mark_appointment_no_show() -> no_show   (tutor, 15 minutes after the start)
+cancel_appointment()     -> cancelled   (student >= 2 h before; tutor with a reason; never after the start)
+```
+
+Other rules enforced in the database: a student cannot hold two overlapping
+sessions; a window cannot be created in the past, reshaped or removed while it has
+appointments; an admin can only decide applications that are `pending` or
+`under_review` (a tutor asked to revise must resubmit first).
+
+## 10. Testing layers
+
+| Layer | Folder | What it proves |
+|---|---|---|
+| Unit (Vitest) | `tests/` | Validation, access decisions, appointment button rules, error messages |
+| Database (SQL) | `supabase/tests/` | The booking and cancellation rules, RLS visibility, application review, all in a rolled-back transaction |
+| End to end (Selenium) | `selenium_tests/` | Real browser flows per requirement: access control, sign-in and registration, booking, confirming, cancelling, tutor vetting, admin |

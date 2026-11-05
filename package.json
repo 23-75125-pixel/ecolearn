@@ -8,10 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "python3 -m unittest discover -s selenium_tests -t . -v",
+    "test:e2e": "node scripts/run-e2e-tests.mjs",
     "db:types": "supabase gen types typescript --linked --schema public > types/database.types.ts",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:db": "psql \"$DATABASE_URL\" -v ON_ERROR_STOP=1 -f supabase/tests/session_flow.test.sql"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

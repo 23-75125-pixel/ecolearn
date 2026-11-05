@@ -2,7 +2,7 @@
 
 import { Suspense, useActionState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Mail } from "lucide-react";
 import { signIn, type FormState } from "../actions";
 import { GoogleSignIn } from "@/components/auth/google-button";
@@ -21,7 +21,6 @@ const initialState: FormState = null;
 
 function LoginForm() {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "";
 
@@ -58,11 +57,6 @@ function LoginForm() {
       <Button type="submit" className="w-full" isLoading={isPending}>
         Sign in
       </Button>
-      <ActionDialog
-        error={state?.error}
-        success={state?.success}
-        onClose={() => state?.redirectTo && router.push(state.redirectTo)}
-      />
     </form>
   );
 }

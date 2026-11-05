@@ -76,7 +76,7 @@ const FEATURES = [
   {
     icon: RotateCcw,
     title: "Hassle-free cancellation",
-    body: "Cancel in one click and the slot reopens for others.",
+    body: "Cancel up to 2 hours before a session and the slot reopens for others.",
     span: "md:col-span-2",
   },
 ];

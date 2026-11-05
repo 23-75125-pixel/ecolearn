@@ -1,4 +1,3 @@
-import { ACTIVE_APPOINTMENT_STATUSES } from "@/lib/constants/status";
 import type { DbClient } from "@/lib/supabase/types";
 
 /**
@@ -27,23 +26,10 @@ export async function getTutorProfile(client: DbClient, profileId: string) {
   return data;
 }
 
-export async function getUpcomingAppointments(client: DbClient, tutorProfileId: string) {
-  const { data } = await client
-    .from("appointments")
-    .select(
-      "id, status, appointment_slots(slot_date, start_time, end_time), profiles(first_name, last_name), subjects(name)",
-    )
-    .eq("tutor_profile_id", tutorProfileId)
-    .in("status", ACTIVE_APPOINTMENT_STATUSES)
-    .order("created_at", { ascending: false })
-    .limit(8);
-  return data ?? [];
-}
-
 export async function getAvailability(client: DbClient, tutorProfileId: string) {
   const { data } = await client
     .from("availability")
-    .select("id, day_date, start_time, end_time, slot_duration_minutes, subject_id")
+    .select("id, day_date, start_time, end_time, slot_duration_minutes, subject_id, session_mode, meeting_url, location")
     .eq("tutor_profile_id", tutorProfileId)
     .order("day_date")
     .order("start_time");

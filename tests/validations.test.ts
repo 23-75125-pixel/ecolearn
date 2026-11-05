@@ -6,9 +6,8 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "@/lib/validations/auth";
-import { parseUuid } from "@/lib/validations/common";
 import { hasValidFileSignature, parseApplicationForm } from "@/lib/validations/application";
-import { availabilitySchema, profileSchema, reviewReasonSchema } from "@/lib/validations/tutor";
+import { availabilitySchema, noteSchema, profileSchema, reviewReasonSchema } from "@/lib/validations/tutor";
 
 const validRegistration = {
   role: "student",
@@ -158,26 +157,86 @@ describe("hasValidFileSignature", () => {
 });
 
 describe("availabilitySchema", () => {
-  const valid = { dayDate: "2026-10-05", startTime: "09:00", endTime: "12:00", duration: "180", subjectId: "" };
+  const online = {
+    dayDate: "2026-10-05",
+    startTime: "09:00",
+    endTime: "12:00",
+    duration: "60",
+    sessionMode: "online",
+    meetingUrl: "https://meet.example.com/room",
+    location: "",
+    subjectId: "",
+  };
+  const inPerson = { ...online, sessionMode: "in_person", meetingUrl: "", location: "Library, room 2" };
 
-  it("accepts a normal window", () => {
-    expect(availabilitySchema.safeParse(valid).success).toBe(true);
+  it("accepts an online window with a meeting link and an in-person window with a place", () => {
+    expect(availabilitySchema.safeParse(online).success).toBe(true);
+    expect(availabilitySchema.safeParse(inPerson).success).toBe(true);
   });
 
-  it("rejects an end time before the start time and odd durations", () => {
-    expect(availabilitySchema.safeParse({ ...valid, endTime: "08:00" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, duration: "7" }).success).toBe(false);
+  it("lets a window hold several sessions", () => {
+    expect(availabilitySchema.safeParse({ ...online, endTime: "10:00" }).success).toBe(true);
+    expect(availabilitySchema.safeParse({ ...online, duration: "30", endTime: "10:30" }).success).toBe(true);
+  });
+
+  it("rejects an end time before the start time", () => {
+    expect(availabilitySchema.safeParse({ ...online, endTime: "08:00" }).success).toBe(false);
+  });
+
+  it("rejects a window that does not fit whole sessions", () => {
+    expect(availabilitySchema.safeParse({ ...online, endTime: "10:30" }).success).toBe(false);
+  });
+
+  it("rejects session lengths that are not offered", () => {
+    expect(availabilitySchema.safeParse({ ...online, duration: "7" }).success).toBe(false);
+  });
+
+  it("requires a secure meeting link for online sessions", () => {
+    expect(availabilitySchema.safeParse({ ...online, meetingUrl: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, meetingUrl: "http://insecure.example.com" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, meetingUrl: "javascript:alert(1)" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, meetingUrl: "https://a b" }).success).toBe(false);
+  });
+
+  it("requires a place for in-person sessions", () => {
+    expect(availabilitySchema.safeParse({ ...inPerson, location: "" }).success).toBe(false);
+  });
+
+  it("rejects missing fields and malformed dates and times", () => {
+    expect(availabilitySchema.safeParse({ ...online, dayDate: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, startTime: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, endTime: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, duration: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, dayDate: "not-a-date" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, startTime: "9:00" }).success).toBe(false);
+  });
+
+  it("accepts an optional subject and rejects a non-UUID subject", () => {
+    expect(availabilitySchema.safeParse({ ...online, subjectId: "3f2504e0-4f89-41d3-9a0c-0305e82c3301" }).success).toBe(true);
+    expect(availabilitySchema.safeParse({ ...online, subjectId: "not-a-uuid" }).success).toBe(false);
+  });
+
+  it("requires a session type", () => {
+    expect(availabilitySchema.safeParse({ ...online, sessionMode: "" }).success).toBe(false);
+    expect(availabilitySchema.safeParse({ ...online, sessionMode: "phone" }).success).toBe(false);
   });
 });
 
-describe("parseUuid", () => {
-  it("returns only valid UUIDs", () => {
-    const form = new FormData();
-    form.set("good", "3f2504e0-4f89-41d3-9a0c-0305e82c3301");
-    form.set("bad", "1 OR 1=1");
-    expect(parseUuid(form, "good")).toBe("3f2504e0-4f89-41d3-9a0c-0305e82c3301");
-    expect(parseUuid(form, "bad")).toBeNull();
-    expect(parseUuid(form, "missing")).toBeNull();
+describe("noteSchema (booking notes and cancellation reasons)", () => {
+  it("accepts a missing field: booking without a note must work", () => {
+    expect(noteSchema.safeParse(null).success).toBe(true);
+    expect(noteSchema.parse(null)).toBeUndefined();
+    expect(noteSchema.parse(undefined)).toBeUndefined();
+    expect(noteSchema.parse("   ")).toBeUndefined();
+  });
+
+  it("trims and keeps a normal note", () => {
+    expect(noteSchema.parse("  Fractions please  ")).toBe("Fractions please");
+  });
+
+  it("rejects a note over 1000 characters", () => {
+    expect(noteSchema.safeParse("x".repeat(1001)).success).toBe(false);
+    expect(noteSchema.safeParse("x".repeat(1000)).success).toBe(true);
   });
 });
 
@@ -228,48 +287,6 @@ describe("loginSchema", () => {
 
   it("rejects empty password", () => {
     expect(loginSchema.safeParse({ ...validLogin, password: "" }).success).toBe(false);
-  });
-});
-
-describe("availabilitySchema", () => {
-  const valid = { dayDate: "2026-10-05", startTime: "09:00", endTime: "12:00", duration: "180", subjectId: "" };
-
-  it("accepts a normal window", () => {
-    expect(availabilitySchema.safeParse(valid).success).toBe(true);
-  });
-
-  it("rejects an end time before the start time and odd durations", () => {
-    expect(availabilitySchema.safeParse({ ...valid, endTime: "08:00" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, duration: "7" }).success).toBe(false);
-  });
-
-  it("rejects missing required fields", () => {
-    expect(availabilitySchema.safeParse({ ...valid, dayDate: "" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, startTime: "" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, endTime: "" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, duration: "" }).success).toBe(false);
-  });
-
-  it("rejects invalid date and time formats", () => {
-    expect(availabilitySchema.safeParse({ ...valid, dayDate: "not-a-date" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, startTime: "9:00" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, endTime: "12:0" }).success).toBe(false);
-  });
-
-  it("rejects duration longer than one day", () => {
-    expect(availabilitySchema.safeParse({ ...valid, duration: "1441" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, duration: "-30" }).success).toBe(false);
-  });
-
-  it("accepts optional subjectId and rejects non-UUID subjectId", () => {
-    expect(availabilitySchema.safeParse({ ...valid, subjectId: "" }).success).toBe(true);
-    expect(availabilitySchema.safeParse({ ...valid, subjectId: "3f2504e0-4f89-41d3-9a0c-0305e82c3301" }).success).toBe(true);
-    expect(availabilitySchema.safeParse({ ...valid, subjectId: "not-a-uuid" }).success).toBe(false);
-  });
-
-  it("requires duration to match start and end time difference", () => {
-    expect(availabilitySchema.safeParse({ ...valid, startTime: "09:00", endTime: "10:30", duration: "60" }).success).toBe(false);
-    expect(availabilitySchema.safeParse({ ...valid, startTime: "09:00", endTime: "10:30", duration: "90" }).success).toBe(true);
   });
 });
 

@@ -11,12 +11,12 @@ const FAQS = [
   {
     question: "How does booking work?",
     answer:
-      "Tutors publish their weekly availability, and the platform generates bookable slots from it. You pick a slot that fits your week and it's reserved instantly — a slot can never be double-booked.",
+      "Tutors publish the times they teach, and each one becomes a bookable slot. Pick a slot and it is reserved for you right away, so nobody else can take it. Your tutor then confirms the session, and your dashboard shows how to join: a meeting link for online sessions, or the meeting place for in-person ones.",
   },
   {
     question: "Can I cancel or reschedule a session?",
     answer:
-      "Yes. From your dashboard you can cancel any upcoming appointment in one click, which immediately reopens the slot for other students.",
+      "You can cancel an upcoming session from your dashboard up to 2 hours before it starts, and the time opens up again for other students. There is no rescheduling yet: cancel, then book another time.",
   },
   {
     question: "What subjects are covered?",

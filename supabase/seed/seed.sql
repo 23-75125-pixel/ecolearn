@@ -184,12 +184,14 @@ begin
   -- entries attribute correctly.
   perform set_config('request.jwt.claim.sub', v_tutor_approved_id::text, true);
 
-  insert into availability (tutor_profile_id, subject_id, day_date, start_time, end_time, slot_duration_minutes)
-  values (v_tutor_profile_id, v_subject_math, current_date + interval '2 days', '09:00', '12:00', 60)
+  insert into availability (tutor_profile_id, subject_id, day_date, start_time, end_time, slot_duration_minutes, session_mode, meeting_url)
+  values (v_tutor_profile_id, v_subject_math, current_date + interval '2 days', '09:00', '12:00', 60,
+          'online', 'https://meet.example.com/ecolearn-demo-math')
   returning id into v_availability_id;
 
-  insert into availability (tutor_profile_id, subject_id, day_date, start_time, end_time, slot_duration_minutes)
-  values (v_tutor_profile_id, v_subject_science, current_date + interval '3 days', '13:00', '16:00', 60);
+  insert into availability (tutor_profile_id, subject_id, day_date, start_time, end_time, slot_duration_minutes, session_mode, location)
+  values (v_tutor_profile_id, v_subject_science, current_date + interval '3 days', '13:00', '16:00', 60,
+          'in_person', 'Public library, study room 2');
 
   -- ---- one sample booking, so dashboards have something to show ----
   -- Acting as the student, and going through the real booking RPC —

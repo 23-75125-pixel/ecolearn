@@ -31,6 +31,9 @@ export type TeachingMode = "online" | "in_person" | "hybrid";
 
 export type SlotStatus = "open" | "booked" | "cancelled";
 
+/** How a session is held: over a meeting link, or at a place. */
+export type SessionMode = "online" | "in_person";
+
 export type AppointmentStatus =
   | "scheduled"
   | "confirmed"
@@ -235,6 +238,9 @@ export interface Database {
           end_time: string;
           slot_duration_minutes: number;
           notes: string | null;
+          session_mode: SessionMode;
+          meeting_url: string | null;
+          location: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -272,6 +278,7 @@ export interface Database {
           start_time: string;
           end_time: string;
           status: SlotStatus;
+          session_mode: SessionMode;
           created_at: string;
         };
         Insert: Partial<
@@ -319,6 +326,10 @@ export interface Database {
           notes: string | null;
           cancelled_by: string | null;
           cancellation_reason: string | null;
+          session_mode: SessionMode;
+          meeting_url: string | null;
+          location: string | null;
+          confirmed_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -351,6 +362,13 @@ export interface Database {
             columns: ["subject_id"];
             isOneToOne: false;
             referencedRelation: "subjects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "appointments_cancelled_by_fkey";
+            columns: ["cancelled_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -434,6 +452,18 @@ export interface Database {
         Args: { p_appointment_id: string; p_reason?: string | null };
         Returns: void;
       };
+      confirm_appointment: {
+        Args: { p_appointment_id: string };
+        Returns: void;
+      };
+      complete_appointment: {
+        Args: { p_appointment_id: string };
+        Returns: void;
+      };
+      mark_appointment_no_show: {
+        Args: { p_appointment_id: string };
+        Returns: void;
+      };
       // Contact details are not selectable from `profiles`; this returns them
       // only for the caller's own profile, or any profile when the caller is an admin.
       has_accepted_terms: {
@@ -449,6 +479,10 @@ export interface Database {
         Args: { p_profile_id: string };
         Returns: { email: string; phone: string | null }[];
       };
+      get_private_profiles: {
+        Args: { p_profile_ids: string[] };
+        Returns: { id: string; email: string; phone: string | null }[];
+      };
     };
     Enums: {
       app_role: AppRole;
@@ -456,6 +490,7 @@ export interface Database {
       credential_type: CredentialType;
       teaching_mode: TeachingMode;
       slot_status: SlotStatus;
+      session_mode: SessionMode;
       appointment_status: AppointmentStatus;
     };
   };

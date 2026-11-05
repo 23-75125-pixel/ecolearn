@@ -1,32 +1,40 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { decideAccess } from "@/lib/auth/access";
+import { ROLE_PREFIXES } from "@/lib/constants/roles";
 import { updateSession } from "@/lib/supabase/middleware";
-import { AUTH_PATHS, ROLE_HOME, ROLE_PREFIXES } from "@/lib/constants/roles";
 import type { AppRole } from "@/types/database.types";
 
 /**
  * Next.js 16 renamed `middleware.ts` -> `proxy.ts` (and the exported
  * `middleware` function -> `proxy`). This is the network boundary: it
- * refreshes the Supabase session on every request and redirects requests
- * that don't belong in a given role's section.
+ * refreshes the Supabase session on every page request and applies the access
+ * rules in `lib/auth/access.ts`.
  *
- * This is a UX convenience, NOT the security boundary — every table has
- * RLS, and every Server Action re-checks the caller's role server-side.
- * Hiding a link or bouncing a request here never substitutes for that.
+ * This is the first line of defence and a UX convenience, NOT the security
+ * boundary: every table has RLS, every SQL function checks the caller, and
+ * every Server Action re-checks the caller's role. Bouncing a request here
+ * never substitutes for that.
  */
+
+function unavailable(message: string) {
+  return new NextResponse(message, {
+    status: 503,
+    headers: { "Retry-After": "5", "Cache-Control": "no-store" },
+  });
+}
 
 export async function proxy(request: NextRequest) {
   const { response, supabase, user, authError } = await updateSession(request);
   const { pathname } = request.nextUrl;
-  const matchedRolePrefix = ROLE_PREFIXES.find(({ prefix }) =>
-    pathname === prefix || pathname.startsWith(`${prefix}/`),
+  const isRoleSection = ROLE_PREFIXES.some(
+    ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 
-  if (matchedRolePrefix && authError) {
+  // If we cannot verify who this is, never guess: a role section must not open,
+  // and any other page is shown to the visitor as a guest.
+  if (authError) {
     console.warn("Supabase auth verification unavailable:", authError.message);
-    return new NextResponse("Authentication service temporarily unavailable. Please try again.", {
-      status: 503,
-      headers: { "Retry-After": "5", "Cache-Control": "no-store" },
-    });
+    if (isRoleSection) return unavailable("Authentication service temporarily unavailable. Please try again.");
   }
 
   let role: AppRole | null = null;
@@ -38,41 +46,24 @@ export async function proxy(request: NextRequest) {
       .maybeSingle();
     if (profileError) {
       console.warn("Profile role lookup failed:", profileError.message);
-      if (matchedRolePrefix) {
-        return new NextResponse("Account authorization is temporarily unavailable. Please try again.", {
-          status: 503,
-          headers: { "Retry-After": "5", "Cache-Control": "no-store" },
-        });
-      }
+      return unavailable("Account authorization is temporarily unavailable. Please try again.");
     }
-    role = profile?.role ?? null;
-  }
-
-  if (matchedRolePrefix) {
-    if (!user) {
-      const redirectUrl = new URL("/login", request.url);
-      redirectUrl.searchParams.set("next", pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
-    if (!role) {
+    if (!profile) {
       return new NextResponse("Your account profile is not available.", {
         status: 403,
         headers: { "Cache-Control": "no-store" },
       });
     }
-    if (role !== matchedRolePrefix.role) {
-      return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
-    }
+    role = profile.role;
   }
 
-  if (user && role && AUTH_PATHS.includes(pathname)) {
-    return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
-  }
-
-  // Signed-in users must not access the public homepage — redirect to their
-  // role dashboard. Only guests may view the landing page and footer.
-  if (user && role && pathname === "/") {
-    return NextResponse.redirect(new URL(ROLE_HOME[role], request.url));
+  const decision = decideAccess({ pathname, role });
+  if (decision.type === "redirect") {
+    const target = new URL(decision.to, request.url);
+    const redirect = NextResponse.redirect(target);
+    // Keep any refreshed auth cookies on the redirect response.
+    response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+    return redirect;
   }
 
   return response;
@@ -80,9 +71,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/",
-    "/student/:path*",
-    "/tutor/:path*",
-    "/admin/:path*",
+    // Every page and route handler, except static files and Next.js internals.
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|avif|svg|ico)$).*)",
   ],
 };

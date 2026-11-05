@@ -11,20 +11,22 @@ import {
   APPLICATION_STATUS_MESSAGE,
   EDITABLE_APPLICATION_STATUSES,
 } from "@/lib/constants/status";
-import { unwrapRelation } from "@/lib/utils/relations";
 import { ApplicationForm } from "@/components/tutor/application-form";
 import { AvailabilityManager } from "@/components/tutor/availability-manager";
 import { NotificationList } from "@/components/notifications/notification-list";
 import { ProfileEditor } from "@/components/tutor/profile-editor";
-import { DIVIDE, ITEM_TITLE, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
+import { EMPTY_STATE, ITEM_TITLE, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
-import { shortTime } from "@/lib/utils/datetime";
+import { AppointmentList } from "@/components/appointments/appointment-list";
 import {
-  getAvailability,
-  getTutorApplication,
-  getTutorProfile,
-  getUpcomingAppointments,
-} from "./queries";
+  cancelAppointmentAsTutor,
+  completeAppointment,
+  confirmAppointment,
+  markNoShow,
+} from "@/app/tutor/actions";
+import { getTutorAppointments } from "@/lib/queries/appointments";
+import { splitAppointments, type AppointmentView } from "@/lib/appointments/view";
+import { getAvailability, getTutorApplication, getTutorProfile } from "./queries";
 
 type Application = NonNullable<Awaited<ReturnType<typeof getTutorApplication>>>;
 
@@ -81,30 +83,41 @@ function ApplicationStatusCard({ application, subjects }: { application: Applica
   );
 }
 
-function AppointmentsCard({ appointments }: { appointments: Awaited<ReturnType<typeof getUpcomingAppointments>> }) {
+function AppointmentsCard({ appointments }: { appointments: AppointmentView[] | null }) {
+  const { upcoming, history } = splitAppointments(appointments ?? []);
+  const handlers = {
+    cancel: cancelAppointmentAsTutor,
+    confirm: confirmAppointment,
+    complete: completeAppointment,
+    noShow: markNoShow,
+  };
+
   return (
-    <Card>
-      <CardHeader className="mb-4">
-        <CardTitle>Upcoming appointments</CardTitle>
-      </CardHeader>
-      <p className={TITLE}>{appointments.length}</p>
-      <ul className={cn("mt-4", DIVIDE)}>
-        {appointments.map((appointment) => {
-          const student = unwrapRelation(appointment.profiles);
-          const slot = unwrapRelation(appointment.appointment_slots);
-          return (
-            <li key={appointment.id} className="py-3 text-sm">
-              <p className={ITEM_TITLE}>
-                {student?.first_name} {student?.last_name}
-              </p>
-              <p className={SUBTEXT}>
-                {slot?.slot_date} · {slot ? shortTime(slot.start_time) : ""}
-              </p>
-            </li>
-          );
-        })}
-      </ul>
-    </Card>
+    <>
+      <Card className="min-w-0">
+        <CardHeader>
+          <CardTitle>Sessions</CardTitle>
+          <CardDescription>
+            Confirm new requests, then teach on the meeting link or at the place you set.
+          </CardDescription>
+        </CardHeader>
+        {appointments === null && <Alert>We couldn&apos;t load your sessions. Please refresh the page.</Alert>}
+        {upcoming.length === 0 ? (
+          <p className={EMPTY_STATE}>No upcoming sessions yet.</p>
+        ) : (
+          <AppointmentList appointments={upcoming} actor="tutor" handlers={handlers} />
+        )}
+      </Card>
+      {history.length > 0 && (
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Session history</CardTitle>
+            <CardDescription>Completed, cancelled and missed sessions.</CardDescription>
+          </CardHeader>
+          <AppointmentList appointments={history} actor="tutor" handlers={handlers} />
+        </Card>
+      )}
+    </>
   );
 }
 
@@ -147,7 +160,7 @@ export default async function TutorDashboardPage() {
   }
 
   const [appointments, subjects, availability, notifications] = await Promise.all([
-    getUpcomingAppointments(supabase, tutorProfile.id),
+    getTutorAppointments(supabase, tutorProfile.id),
     getActiveSubjects(supabase),
     getAvailability(supabase, tutorProfile.id),
     getRecentNotifications(supabase, profile.id),
@@ -160,12 +173,12 @@ export default async function TutorDashboardPage() {
         <Badge tone="success">Approved tutor</Badge>
       </div>
 
-      <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-2">
+      <div className="mt-8 grid min-w-0 gap-6">
         <AppointmentsCard appointments={appointments} />
         <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Availability</CardTitle>
-            <CardDescription>Manage your bookable schedule.</CardDescription>
+            <CardDescription>Choose when you teach and how: online on a meeting link, or in person.</CardDescription>
           </CardHeader>
           <AvailabilityManager availability={availability} subjects={subjects} />
         </Card>

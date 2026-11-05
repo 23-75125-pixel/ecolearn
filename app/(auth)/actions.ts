@@ -18,7 +18,6 @@ import type { AppRole } from "@/types/database.types";
 export type FormState = {
   error?: string;
   success?: string;
-  redirectTo?: string;
   fieldErrors?: Record<string, string>;
   message?: string;
 } | null;
@@ -72,10 +71,7 @@ export async function signIn(_prevState: FormState, formData: FormData): Promise
 
   // Only follow `next` when it stays inside this user's own section.
   const isOwnSection = next === ROLE_HOME[role] || next.startsWith(`/${role}/`);
-  return {
-    success: "Login successful. Welcome back!",
-    redirectTo: isOwnSection ? next : ROLE_HOME[role],
-  };
+  redirect(isOwnSection ? next : ROLE_HOME[role]);
 }
 
 export async function signUp(_prevState: FormState, formData: FormData): Promise<FormState> {
