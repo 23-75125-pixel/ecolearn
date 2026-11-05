@@ -16,15 +16,12 @@ import { SubjectExplorer } from "@/components/landing/subject-explorer";
 import { SessionGallery } from "@/components/landing/session-gallery";
 import { PersonaTabs } from "@/components/landing/persona-tabs";
 import { FaqSection } from "@/components/landing/faq-accordion";
-import { HeroVisual } from "@/components/landing/hero-visual";
+import { HeroScrollScene } from "@/components/landing/hero-scroll-scene";
 import { buttonClasses } from "@/components/ui/button";
-import { BORDER, BORDER_COLOR, ICON, ICON_INLINE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE, TITLE } from "@/lib/ui/styles";
+import { BORDER, BORDER_COLOR, ICON, ICON_INLINE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
-import type { CSSProperties } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveSubjects } from "@/lib/queries/shared";
-
-const HEADLINE_WORDS = ["Learn", "anything", "you", "set", "your", "mind", "to."];
 
 const REAL_WORLD = [
   {
@@ -117,35 +114,7 @@ export default async function HomePage() {
   const subjects = await getActiveSubjects(await createClient());
   return (
     <div className="overflow-hidden">
-      {/* Hero: staggered copy on the left and classroom photo on the right */}
-      <section className="relative">
-        <div aria-hidden="true" className="hero-grid pointer-events-none absolute inset-0" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-16 px-4 pb-14 pt-14 sm:px-6 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:pb-16 lg:pt-24">
-          <div className="text-center lg:text-left">
-            <h1 className={cn(TITLE, "text-balance")}>
-              {HEADLINE_WORDS.map((word, index) => (
-                <span
-                  key={`${word}-${index}`}
-                  className="animate-word-in inline-block"
-                  style={{ "--word-delay": `${150 + index * 70}ms` } as CSSProperties}
-                >
-                  {word}{"\u00A0"}
-                </span>
-              ))}
-            </h1>
-            <p className={cn("animate-fade-up mx-auto mt-4 max-w-xl text-pretty leading-6 [animation-delay:700ms] lg:mx-0", SUBTEXT)}>
-              Real help for real classroom challenges: homework, exams, and skills you will use long after school.
-            </p>
-            <div className="animate-fade-up mt-8 flex flex-wrap items-center justify-center gap-3 [animation-delay:850ms] lg:justify-start">
-              <Link href="/tutors" className={buttonClasses({ size: "lg" })}>
-                Find your tutor
-                <ArrowRight className={ICON_INLINE} />
-              </Link>
-            </div>
-          </div>
-          <HeroVisual />
-        </div>
-      </section>
+      <HeroScrollScene />
 
       {/* Subjects: one consistent illustration set, one tab per subject */}
       <SubjectExplorer subjects={subjects} />
