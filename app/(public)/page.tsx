@@ -118,6 +118,11 @@ export default async function HomePage() {
       <HomeScrollReveal>
         <HeroScrollScene />
 
+      {/* Session image marquee follows the hero exchange before subjects. */}
+      <div className="mt-14">
+        <SessionGallery />
+      </div>
+
       {/* Subjects: one consistent illustration set, one tab per subject */}
       <SubjectExplorer subjects={subjects} />
 
@@ -171,11 +176,6 @@ export default async function HomePage() {
           <PersonaTabs />
         </div>
       </section>
-
-      {/* Sessions */}
-      <div className="mt-14">
-        <SessionGallery />
-      </div>
 
       {/* How it works */}
       <section id="how-it-works" className={cn("border-y", BORDER_COLOR)}>

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BORDER, SECTION, SUBTEXT } from "@/lib/ui/styles";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils/cn";
 
 const MOMENTS = [
@@ -24,33 +25,40 @@ const MOMENTS = [
 ];
 
 export function SessionGallery() {
+  const cards = [...MOMENTS, ...MOMENTS];
+
   return (
-    <section aria-labelledby="sessions-heading" className="mx-auto max-w-6xl px-4 pb-20 sm:px-6 sm:pb-24">
-      <div className="mx-auto max-w-2xl text-center">
+    <section aria-labelledby="sessions-heading" className="overflow-hidden pb-20 sm:pb-24">
+      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
         <h2 id="sessions-heading" className={SECTION}>
           What a good session looks like.
         </h2>
         <p className={cn(SUBTEXT, "mt-3 leading-6")}>Focused, patient and built around the learner in front of the tutor.</p>
       </div>
-      <div className="mt-10 grid gap-6 md:grid-cols-3">
-        {MOMENTS.map((moment) => (
-          <figure key={moment.src}>
-            <div className={cn("relative aspect-[4/3] overflow-hidden rounded-md", BORDER)}>
-              <Image
-                src={moment.src}
-                alt={moment.alt}
-                fill
-                quality={88}
-                sizes="(max-width: 768px) 100vw, 384px"
-                className="object-cover"
-              />
-            </div>
-            <figcaption className="mt-3">
-              <span className="block text-sm font-medium">{moment.caption}</span>
-              <span className={cn(SUBTEXT, "mt-0.5 block")}>{moment.note}</span>
-            </figcaption>
-          </figure>
-        ))}
+      <div className="marquee mt-10" tabIndex={0} aria-label="Session examples carousel">
+        <div
+          className="animate-marquee flex w-max gap-6 px-4 sm:px-6"
+          style={{ "--marquee-duration": "32s" } as CSSProperties}
+        >
+          {cards.map((moment, index) => (
+            <figure key={`${moment.src}-${index}`} className="w-[min(78vw,24rem)] shrink-0">
+              <div className={cn("relative aspect-[4/3] overflow-hidden rounded-md", BORDER)}>
+                <Image
+                  src={moment.src}
+                  alt={index >= MOMENTS.length ? "" : moment.alt}
+                  fill
+                  quality={88}
+                  sizes="(max-width: 768px) 78vw, 384px"
+                  className="object-cover"
+                />
+              </div>
+              <figcaption className="mt-3">
+                <span className="block text-sm font-medium">{moment.caption}</span>
+                <span className={cn(SUBTEXT, "mt-0.5 block")}>{moment.note}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
     </section>
   );
