@@ -87,6 +87,92 @@ CHROMIUM_BINARY=/usr/bin/chromium
 # CHROMEDRIVER_BINARY=/usr/bin/chromedriver
 ```
 
+## 2A. Windows PowerShell setup and command conversion
+
+Run PowerShell from the project root. If the project is in the Downloads
+folder, use a path appropriate for the Windows account:
+
+```powershell
+Set-Location "$HOME\Downloads\ecolearn-main-refactored\ecolearn-main"
+```
+
+Check the required runtimes:
+
+```powershell
+node --version       # Node.js 20 or newer
+npm --version
+py --version         # Python 3.9 or newer
+```
+
+Install the JavaScript dependencies:
+
+```powershell
+npm install
+```
+
+Create and activate a Python virtual environment:
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r selenium_tests\requirements.txt
+```
+
+If PowerShell blocks virtual-environment activation, allow scripts for the
+current Windows user only, then activate again:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+```
+
+Install Google Chrome from the official installer, or install Chromium with
+Windows Package Manager when it is available:
+
+```powershell
+winget install --id Google.Chrome --exact
+```
+
+Selenium Manager normally downloads a compatible driver automatically. If an
+explicit browser or driver is needed, use Windows paths in
+`.env.e2e.local`, for example:
+
+```env
+CHROMIUM_BINARY=C:\Program Files\Google\Chrome\Application\chrome.exe
+# CHROMEDRIVER_BINARY=C:\tools\chromedriver.exe
+```
+
+Copy the E2E configuration template:
+
+```powershell
+Copy-Item .env.e2e.example .env.e2e.local
+notepad .env.e2e.local
+```
+
+Use the same `E2E_*` variables shown in section 6. The actual
+`.env.e2e.local` file is ignored by Git and must not be committed.
+
+PowerShell uses `$env:NAME` instead of Bash's `NAME=value command` syntax:
+
+| Purpose | Bash | Windows PowerShell |
+|---|---|---|
+| Start the development server | `npm run dev` | `npm run dev` |
+| Start the production server | `npm run build && npm run start` | `npm run build; npm run start` |
+| Run E2E tests | `npm run test:e2e` | `npm run test:e2e` |
+| Run with a visible browser | `HEADED=1 npm run test:e2e` | `$env:HEADED="1"; npm run test:e2e` |
+| Use another app URL | `BASE_URL='http://localhost:3000' npm run test:e2e` | `$env:BASE_URL="http://localhost:3000"; npm run test:e2e` |
+| Require email confirmation | `EMAIL_CONFIRMATION_REQUIRED=1 npm run test:e2e` | `$env:EMAIL_CONFIRMATION_REQUIRED="1"; npm run test:e2e` |
+| Run database tests | `DATABASE_URL='...' npm run test:db` | `$env:DATABASE_URL="..."; npm run test:db` |
+| Check the app | `curl --fail http://localhost:3000` | `Invoke-WebRequest http://localhost:3000 -UseBasicParsing` |
+
+These environment variables apply only to the current PowerShell window.
+Clear them when finished if needed:
+
+```powershell
+Remove-Item Env:HEADED, Env:BASE_URL, Env:EMAIL_CONFIRMATION_REQUIRED -ErrorAction SilentlyContinue
+```
+
 ## 3. Unit tests
 
 Run all Vitest unit tests:
@@ -303,3 +389,23 @@ curl --fail http://localhost:3000
 The current Selenium suite uses email/password login. Configure dedicated
 test accounts with Supabase email/password authentication instead of automating
 Google OAuth.
+
+### Windows PowerShell quick presentation sequence
+
+From an activated `.venv`, run:
+
+```powershell
+npm run lint
+npm run typecheck
+npm test -- --reporter=dot
+npm run build
+npm run test:e2e
+```
+
+For focused E2E tests, use the same selectors as the Bash commands. For
+example:
+
+```powershell
+npm run test:e2e -- selenium_tests.test_access_control -v
+npm run test:e2e -- selenium_tests.test_sessions.TutorSessionTests.test_in_person_sessions_show_the_place_not_a_link -v
+```
