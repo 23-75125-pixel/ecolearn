@@ -79,6 +79,12 @@ The complete presentation and test setup is documented in
 
 ## Vercel deployment
 
+The correct Vercel project for this repository is **`Vercel - ecolearn.site`**.
+Use that project for deployments and checks. If GitHub still shows a failed
+check from the obsolete **`Vercel - ecolearn`** project, disable or remove
+that old Vercel-Git integration in the repository's Vercel project settings;
+it is not the deployment target for this application.
+
 The local `.env` file is ignored by Git and is not uploaded to Vercel. Add
 these variables in Vercel Project Settings -> Environment Variables, with the
 Production environment selected:
