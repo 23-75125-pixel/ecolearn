@@ -361,7 +361,75 @@ Expected unit-test result for the current project:
 139 tests passed
 ```
 
-## 11. Troubleshooting
+## 11. Test case plan and current results
+
+Use the following plan for the presentation and regression checklist. A
+**PASS** means the command was executed successfully against the current
+checkout. **FAILED** means an executed test reported a failure. **SKIPPED**
+means the test intentionally did not run because its required account or
+scenario is not part of the three-account setup. **NOT RUN** means it still
+needs to be executed against the configured environment.
+
+### Vitest unit-test cases
+
+| ID | Test module | Test area | Cases | Result |
+|---|---|---|---:|---|
+| V-01 | `tests/cn.test.ts` | CSS class-name merging utility | 6 | **PASS** |
+| V-02 | `tests/common.test.ts` | UUID parsing and empty-value normalization | 10 | **PASS** |
+| V-03 | `tests/datetime.test.ts` | Date, time, timezone, and formatting utilities | 10 | **PASS** |
+| V-04 | `tests/validations.test.ts` | Auth, tutor, availability, booking, profile, and file schemas | 42 | **PASS** |
+| V-05 | `tests/appointment-rules.test.ts` | Cancellation, expiration, and appointment view rules | 13 | **PASS** |
+| V-06 | `tests/access.test.ts` | Role-based route and access rules | 8 | **PASS** |
+| V-07 | `tests/safe-redirect.test.ts` | Open-redirect prevention | 3 | **PASS** |
+| V-08 | `tests/db-errors.test.ts` | Database-error to user-message mapping | 4 | **PASS** |
+| V-09 | `tests/relations.test.ts` | Supabase relation response normalization | 6 | **PASS** |
+| **Total** | **9 modules** | **Unit and domain logic coverage** | **102 directly listed cases** | **139 Vitest tests passed** |
+
+Run the Vitest plan with:
+
+```bash
+npm test -- --reporter=dot
+```
+
+### Selenium browser-test cases
+
+| ID | Selenium module | Test area | Cases | Result |
+|---|---|---|---:|---|
+| S-01 | `test_access_control.py` | Guest and signed-in role access | 13 | **NOT RUN** |
+| S-02 | `test_admin.py` | Admin dashboard, metrics, and review access | 6 | **NOT RUN** |
+| S-03 | `test_auth.py` | Login, registration, signup, and password flows | 24 | **NOT RUN** |
+| S-04 | `test_forgot_password.py` | Forgot/reset-password UI flows | 7 | **NOT RUN** |
+| S-05 | `test_home.py` | Homepage navigation and visible content | 3 | **NOT RUN** |
+| S-06 | `test_landing.py` | Hero, subjects, FAQ, and landing interactions | 19 | **NOT RUN** |
+| S-07 | `test_navigation.py` | Navbar and role navigation | 4 | **NOT RUN** |
+| S-08 | `test_regression.py` | Public-page regression coverage | 14 | **NOT RUN** |
+| S-09 | `test_sessions.py` | Availability, booking, confirmation, cancellation, and session modes | 26 | **NOT RUN** |
+| S-10 | `test_tutor_directory.py` | Tutor directory, search, filters, and profiles | 6 | **NOT RUN** |
+| S-11 | `test_vetting.py` | Tutor application and admin vetting workflow | 10 | **NOT RUN** |
+| **Total** | **11 modules** | **Browser-level E2E coverage** | **132 defined cases** | **Requires configured accounts and a running app** |
+
+The Selenium result is intentionally **NOT RUN** in this plan until the
+current three accounts are configured and the app is started. Earlier E2E
+attempts were not a valid full-pass result because account role/profile state
+and environment setup were incomplete. Do not report those attempts as
+passed.
+
+The current homepage no longer displays the interactive **Book a session /
+Pick a time** preview. Before running Selenium, update or remove any legacy
+browser assertions that still expect that preview. The current homepage
+subject tests should instead verify that active subjects returned by the
+database catalog appear in the subject explorer.
+
+Run the Selenium plan with:
+
+```bash
+npm run test:e2e
+```
+
+After a real run, replace each **NOT RUN** value with **PASS**, **FAILED**, or
+**SKIPPED**, and record the command output and date in the presentation notes.
+
+## 12. Troubleshooting
 
 ### Missing E2E configuration
 
