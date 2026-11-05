@@ -17,6 +17,7 @@ import { SessionGallery } from "@/components/landing/session-gallery";
 import { PersonaTabs } from "@/components/landing/persona-tabs";
 import { FaqSection } from "@/components/landing/faq-accordion";
 import { HeroScrollScene } from "@/components/landing/hero-scroll-scene";
+import { HomeScrollReveal } from "@/components/landing/home-scroll-reveal";
 import { buttonClasses } from "@/components/ui/button";
 import { BORDER, BORDER_COLOR, ICON, ICON_INLINE, ITEM_TITLE, SECTION, SUBTEXT, SURFACE } from "@/lib/ui/styles";
 import { cn } from "@/lib/utils/cn";
@@ -114,7 +115,8 @@ export default async function HomePage() {
   const subjects = await getActiveSubjects(await createClient());
   return (
     <div className="overflow-hidden">
-      <HeroScrollScene />
+      <HomeScrollReveal>
+        <HeroScrollScene />
 
       {/* Subjects: one consistent illustration set, one tab per subject */}
       <SubjectExplorer subjects={subjects} />
@@ -215,6 +217,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </HomeScrollReveal>
     </div>
   );
 }
